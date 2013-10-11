@@ -50,7 +50,7 @@ public class Camera implements GLEventListener{
 		gl.glClearColor(0.0f, 245/255f, 1.0f, 0.5f);  
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
-		
+		 
 		
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glLoadIdentity();

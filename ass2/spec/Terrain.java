@@ -1,27 +1,17 @@
 package ass2.spec;
 
 import java.awt.Dimension;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureCoords;
 
 
-import sailing.objects.Island;
+//import sailing.objects.Island;
 
 /**
  * COMMENT: Comment HeightMap 
