@@ -60,23 +60,36 @@ public class Keyboard implements KeyListener{
 			case KeyEvent.VK_PAGE_UP:
 				myCamera.rotateRight();
 				break;
+			case KeyEvent.VK_W:
+				myCamera.avatarStepForward();
+				break;
+			case KeyEvent.VK_S:
+				myCamera.avatarStepBorward();
+				break;
+			case KeyEvent.VK_A:
+				myCamera.avatarRotateCCW();
+				break;
+			case KeyEvent.VK_D:
+				myCamera.avatarRotateCW();
+				break;
 				
-			case KeyEvent.VK_Q:
+				
+			case KeyEvent.VK_Z:
 				myCamera.ambientUp();
 				break;
-			case KeyEvent.VK_W:
+			case KeyEvent.VK_X:
 				myCamera.ambientDown();
 				break;
-			case KeyEvent.VK_E:
+			case KeyEvent.VK_C:
 				myCamera.diffuseUp();
 				break;
-			case KeyEvent.VK_R:
+			case KeyEvent.VK_V:
 				myCamera.diffuseDown();
 				break;
-			case KeyEvent.VK_T:
+			case KeyEvent.VK_B:
 				myCamera.specularUp();
 				break;
-			case KeyEvent.VK_Y:
+			case KeyEvent.VK_N:
 				myCamera.specularDown();
 				break;
 		 }		

@@ -104,10 +104,20 @@ public class Terrain {
     			gl.glDisable( GL.GL_POLYGON_OFFSET_FILL ); 
     		}
     	}
+    	drawAvatar(gl);
     	drawTrees(gl,treeTexture);
     	//每个drawtree都有gl.glPopMatrix();所以现在回到了地图原点
     	//gl.glPopMatrix();
     	drawRoad(gl, roadTexture);
+    }
+    
+    public Avatar getAvatar(){
+    	return avatar;
+    }
+    
+    private Avatar avatar = new Avatar(this);
+    public void drawAvatar(GL2 gl){    	
+    	avatar.draw(gl);
     }
     
     public void drawTrees(GL2 gl,Texture TreeTexture){

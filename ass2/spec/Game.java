@@ -43,7 +43,7 @@ public class Game extends JFrame{
 		// build a mesh
 		label = new JLabel();
 		label.setText("<HTML>THE Label<P><P>Sample Output</HTML>");
-		Camera camera = new Camera(myTerrain);
+		Camera camera = new Camera(myTerrain,label);
 		System.out.println(myTerrain.getGridAltitude(1, 1));
 		GLProfile glprofile = GLProfile.getDefault();
 		GLCapabilities glcapabilities = new GLCapabilities(glprofile);

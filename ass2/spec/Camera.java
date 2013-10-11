@@ -10,6 +10,7 @@ import java.io.InputStream;
 
 import javax.media.opengl.*;
 import javax.media.opengl.glu.GLU;
+import javax.swing.JLabel;
 
 import com.jogamp.opengl.util.gl2.GLUT;
 import com.jogamp.opengl.util.texture.Texture;
@@ -28,13 +29,14 @@ public class Camera implements GLEventListener{
 	float ambient = 0.5f;
 	float diffuse = 1.7f;
 	float specular = 0.3f;
-
+	JLabel myLabel;
     boolean lightEnable = true;
+    double cameraAvatarDistance = 5.0;
     
     
-    
-	public Camera(Terrain theTerrain){
+	public Camera(Terrain theTerrain, JLabel label){
 		myTerrain = theTerrain;
+		myLabel = label;
 	}
 
 	@Override
@@ -60,12 +62,13 @@ public class Camera implements GLEventListener{
         gl.glRotatef(-30+yrotate, 0.0f, 1.0f, 0.0f); 
         */
 		// TODO 这个不对,目的实现了只是
-		double eyex = 5.0+xtrans;
+		/*double eyex = 5.0+xtrans;
 		double eyey = 2.0+ytrans;
 		double eyez = -15.5+ztrans; //注意这里配合rotate做了更改
 		double centerx = 5+xtrans;
 		double centery = 2;
 		double centerz = 5+ztrans;
+		*/
 		/*
 		double[] ec = {eyex-centerx,eyey-centery,eyez-centerz,1};
 		double[] r = MathUtil.multiply(MathUtil.rotationMatrix(yrotate, false, true, false), ec);
@@ -74,9 +77,20 @@ public class Camera implements GLEventListener{
 		eyey = ec[1];
 		eyez = ec[2];
 		*/
+		/*
 		glu.gluLookAt(eyex, eyey, eyez, centerx, centery, centerz, 0, 1, 0); //TODO 需要修改
 		gl.glRotatef(-30+yrotate, 1.0f, 0.0f, 0.0f); 
 		gl.glRotatef(30, 0.0f, 1.0f, 0.0f); 
+		*/
+		
+		double avatarRadius = avatarAngle*Math.PI/180.0;
+		double eyex = myTerrain.getAvatar().x - Math.sin(avatarRadius)*cameraAvatarDistance;
+		double eyey = myTerrain.getAvatar().getY() + 3.0;
+		double eyez = myTerrain.getAvatar().z - Math.cos(avatarRadius)*cameraAvatarDistance;
+		glu.gluLookAt(eyex, eyey, eyez, 
+				myTerrain.getAvatar().x, myTerrain.getAvatar().getY(), myTerrain.getAvatar().z, 0, 1, 0);
+		
+		
 		gl.glPushMatrix();
 		
 		if(lightEnable){
@@ -85,10 +99,11 @@ public class Camera implements GLEventListener{
 		
         //现在GL在地图应在位置
 		drawShape(gl);
+		myLabel.setText("<HTML>Avatar Position<P>X:"+myTerrain.getAvatar().x+"<P>Y:"+myTerrain.getAvatar().y+"<P>Z:"+myTerrain.getAvatar().z+"<P>angle:"+avatarAngle+"</HTML>");
 	}
 
 	
-	private void setLighting(GL2 gl){ //TODO 此处需要调试
+	private void setLighting(GL2 gl){ //TODO 此处需要调试 并且太阳位置在sunlight
 		 gl.glShadeModel(GL2.GL_SMOOTH);
 
 	        // rotate the light
@@ -330,6 +345,24 @@ public class Camera implements GLEventListener{
 	public void dispose(GLAutoDrawable arg0) {
 		// TODO Auto-generated method stub
 
+	}
+	
+	public double avatarAngle = 0.0;
+	public double angleStep = 10.0;
+	public void avatarStepForward() {
+		myTerrain.getAvatar().stepForawrd(avatarAngle);		
+	}
+
+	public void avatarStepBorward() {
+		myTerrain.getAvatar().stepBackward(avatarAngle);		
+	}
+
+	public void avatarRotateCCW() {
+		avatarAngle += angleStep;		
+	}
+
+	public void avatarRotateCW() {
+		avatarAngle -= angleStep;		
 	}
 
 }
