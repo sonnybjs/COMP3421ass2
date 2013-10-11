@@ -17,6 +17,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureCoords;
+
 
 import sailing.objects.Island;
 
@@ -34,48 +37,88 @@ public class Terrain {
     private float[] mySunlight;
     final public boolean debug = true;
     
-    
     /**
      * 从地面到树到路都要画出来
      * @param gl
      */
-    public void draw(GL2 gl){
-    	gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);  
+    public void draw(GL2 gl, Texture groundTexture, Texture treeTexture, Texture roadTexture){
+    	//gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);  
         //重置模型观察矩阵  
-    	gl.glColor3d(0.0, 0.0, 0.0);
+    	
     	if(debug) {
 			System.out.println("HEIGHT is "+mySize.getHeight() +" width is "+ mySize.getWidth());
 		}
+		
+		
     	//画地面
+    	float textureTop, textureBottom, textureLeft, textureRight;
+    	TextureCoords textureCoords = groundTexture.getImageTexCoords();
+        textureTop = textureCoords.top();
+        textureBottom = textureCoords.bottom();
+        textureLeft = textureCoords.left();
+        textureRight = textureCoords.right();
+        
+        // Enables this texture's target in the current GL context's state.
+        groundTexture.enable(gl);  // same as gl.glEnable(texture.getTarget());
+        // gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_REPLACE);
+        // Binds this texture to the current GL context.
+        groundTexture.bind(gl);  // same as gl.glBindTexture(texture.getTarget(), texture.getTextureObject());
+    	
     	for(int i = 0; i< mySize.getHeight()-1 ; i++) { //loop from 1 to 9 
     		for(int y = 0; y< mySize.getWidth()-1; y++) {
     			if(debug) {
     				System.out.println("i:"+i+" y:"+y+" altitute:"+this.getGridAltitude(i, y));
     			}
     			//方向必须是逆时针
-    			gl.glBegin(gl.GL_LINE_LOOP);
+    			gl.glColor3d(102/255d, 102/255d, 0.0);
+    			/** 
+    	         * 如果您在您的场景中使用多个纹理，您应该使用来 
+    	         *  glBindTexture(GL_TEXTURE_2D, texture[ 所使用纹理对应的数字 ]) 
+    	         * 选择要绑定的纹理。当您想改变纹理时，应该绑定新的纹理。 
+    	         * 有一点值得指出的是，您不能在 glBegin() 和 glEnd() 之间绑定纹理， 
+    	         * 必须在 glBegin() 之前或 glEnd() 之后绑定。 
+    	         */  
+    	       // gl.glBindTexture(GL2.GL_TEXTURE_2D, texture);  
+    	        
+    			gl.glBegin(gl.GL_QUADS);
+    			//gl.glTexCoord2f(0.0f, 0.0f); //纹理的位置
+    			gl.glTexCoord2f(textureLeft, textureBottom);
     			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
+    			gl.glTexCoord2f(textureRight, textureBottom);
     			gl.glVertex3d(i,this.getGridAltitude(i, y+1),y+1);
+    			gl.glTexCoord2f(textureRight, textureTop);
     			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1),y+1);
+    			gl.glTexCoord2f(textureLeft, textureTop);
     			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
     			gl.glEnd();
+    			
+    			//这是网格线,polygonoffset好像不对?
+    			gl.glColor3d(0.0, 0.0, 0.0);
+    			//方向必须是逆时针
+    			gl.glBegin(gl.GL_LINE_LOOP);
+    			gl.glVertex3d(i,this.getGridAltitude(i, y)+0.01,y);
+    			gl.glVertex3d(i,this.getGridAltitude(i, y+1)+0.01,y+1);
+    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1)+0.01,y+1);
+    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y)+0.01,y);
+    			gl.glEnd();
+    			gl.glDisable( GL.GL_POLYGON_OFFSET_FILL ); 
     		}
     	}
-    	drawTrees(gl);
+    	drawTrees(gl,treeTexture);
     	//每个drawtree都有gl.glPopMatrix();所以现在回到了地图原点
     	//gl.glPopMatrix();
-    	drawRoad(gl);
+    	drawRoad(gl, roadTexture);
     }
     
-    public void drawTrees(GL2 gl){
+    public void drawTrees(GL2 gl,Texture TreeTexture){
     	for(Tree tree : myTrees){
-    		tree.draw(gl);
+    		tree.draw(gl,TreeTexture);
     	}
     }
     
-    public void drawRoad(GL2 gl){
+    public void drawRoad(GL2 gl,Texture texture){
     	for(Road road: myRoads){
-    		road.draw(gl);
+    		road.draw(gl, texture);
     	}
     }
     
@@ -234,7 +277,7 @@ public class Terrain {
     
     public void triangleTest(GL2 gl){
     	//所有的面都要按照逆时针绘制！！//清理屏幕和深度缓存  
-        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);  
+        //gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);  
         //重置模型观察矩阵  
         gl.glLoadIdentity();  
         //将绘制中心左移1.5个单位，向屏幕里移入6个单位  

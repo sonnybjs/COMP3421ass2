@@ -60,6 +60,25 @@ public class Keyboard implements KeyListener{
 			case KeyEvent.VK_PAGE_UP:
 				myCamera.rotateRight();
 				break;
+				
+			case KeyEvent.VK_Q:
+				myCamera.ambientUp();
+				break;
+			case KeyEvent.VK_W:
+				myCamera.ambientDown();
+				break;
+			case KeyEvent.VK_E:
+				myCamera.diffuseUp();
+				break;
+			case KeyEvent.VK_R:
+				myCamera.diffuseDown();
+				break;
+			case KeyEvent.VK_T:
+				myCamera.specularUp();
+				break;
+			case KeyEvent.VK_Y:
+				myCamera.specularDown();
+				break;
 		 }		
 	}
 }

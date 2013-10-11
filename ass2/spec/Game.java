@@ -13,6 +13,7 @@ import javax.media.opengl.GLProfile;
 import javax.media.opengl.awt.GLJPanel;
 import javax.media.opengl.glu.GLU;
 import javax.swing.JFrame;
+import javax.swing.*;
 
 import com.jogamp.opengl.util.FPSAnimator;
 
@@ -31,6 +32,8 @@ public class Game extends JFrame{
 		myTerrain = terrain;
 	}
 
+	private JLabel label;
+	
 	/**
 	 * Run the game.
 	 * 
@@ -38,6 +41,8 @@ public class Game extends JFrame{
 	public void run() {
 		// setup camera
 		// build a mesh
+		label = new JLabel();
+		label.setText("<HTML>THE Label<P><P>Sample Output</HTML>");
 		Camera camera = new Camera(myTerrain);
 		System.out.println(myTerrain.getGridAltitude(1, 1));
 		GLProfile glprofile = GLProfile.getDefault();
@@ -48,13 +53,32 @@ public class Game extends JFrame{
 		panel.addKeyListener(new Keyboard(camera));
 		panel.setFocusable(true);
 		panel.requestFocus();
-
+		//panel.add(label);
+		
+		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(panel);
+        panel.setLayout(layout);
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(label, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(249, Short.MAX_VALUE))
+            );
+            layout.setVerticalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(label, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(134, Short.MAX_VALUE))
+            );
+		
 		// Add an animator to call 'display' at 60fps
 		FPSAnimator animator = new FPSAnimator(60);
 		animator.add(panel);
 		animator.start();
 
 		getContentPane().add(panel, BorderLayout.CENTER);
+		
 		setSize(800, 800);
 		setVisible(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
