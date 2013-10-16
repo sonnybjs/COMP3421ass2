@@ -32,7 +32,7 @@ public class Game extends JFrame{
 		myTerrain = terrain;
 	}
 
-	private JLabel label;
+	private static JLabel label;
 	
 	/**
 	 * Run the game.
@@ -42,6 +42,7 @@ public class Game extends JFrame{
 		// setup camera
 		// build a mesh
 		label = new JLabel();
+		label.setForeground(new java.awt.Color(204, 204, 255));
 		label.setText("<HTML>THE Label<P><P>Sample Output</HTML>");
 		Camera camera = new Camera(myTerrain,label);
 		System.out.println(myTerrain.getGridAltitude(1, 1));
@@ -60,16 +61,16 @@ public class Game extends JFrame{
         layout.setHorizontalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(label, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(249, Short.MAX_VALUE))
+                    .addGap(18, 18, 18)
+                    .addComponent(label, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(551, Short.MAX_VALUE))
             );
             layout.setVerticalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(label, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(134, Short.MAX_VALUE))
+                    .addComponent(label, javax.swing.GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE)
+                    .addContainerGap())
             );
 		
 		// Add an animator to call 'display' at 60fps
@@ -97,4 +98,7 @@ public class Game extends JFrame{
 		Game game = new Game(terrain);
 		game.run();
 	}
+	
+	
+	
 }

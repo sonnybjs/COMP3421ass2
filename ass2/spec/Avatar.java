@@ -5,9 +5,9 @@ import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
 
 public class Avatar {
-	public double x = 3.5;
+	public double x = 0.0;
 	public double y;
-	public double z = 2.7;
+	public double z = 0.0;
 	public double step = 0.1;
 	Terrain terrain;
 	GLU glu = new GLU();

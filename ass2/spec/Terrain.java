@@ -26,6 +26,7 @@ public class Terrain {
     private List<Road> myRoads;
     private float[] mySunlight;
     final public boolean debug = true;
+    boolean drawTriangle = false;
     
     /**
      * 从地面到树到路都要画出来
@@ -69,29 +70,68 @@ public class Terrain {
     	         * 必须在 glBegin() 之前或 glEnd() 之后绑定。 
     	         */  
     	       // gl.glBindTexture(GL2.GL_TEXTURE_2D, texture);  
-    	        
-    			gl.glBegin(gl.GL_QUADS);
-    			//gl.glTexCoord2f(0.0f, 0.0f); //纹理的位置
-    			gl.glTexCoord2f(textureLeft, textureBottom);
-    			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
-    			gl.glTexCoord2f(textureRight, textureBottom);
-    			gl.glVertex3d(i,this.getGridAltitude(i, y+1),y+1);
-    			gl.glTexCoord2f(textureRight, textureTop);
-    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1),y+1);
-    			gl.glTexCoord2f(textureLeft, textureTop);
-    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
-    			gl.glEnd();
+	    	        if(!drawTriangle){
+	    			gl.glBegin(gl.GL_QUADS);
+	    			/*double[] a = {i,this.getGridAltitude(i, y),y};
+	    			double[] b = {i,this.getGridAltitude(i, y+1),y+1};
+	    			double[] c = {i+1,this.getGridAltitude(i+1, y+1),y+1};
+	    			double[] n = MathUtil.normal(a, b, c);
+	    			*/
+	    			//gl.glNormal3d(0, 1, 0);
+	    			gl.glTexCoord2f(textureLeft, textureBottom);//左下
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
+	    			gl.glTexCoord2f(textureRight, textureBottom); //右下
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1),y+1);
+	    			gl.glTexCoord2f(textureRight, textureTop);//右上
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1),y+1);
+	    			gl.glTexCoord2f(textureLeft, textureTop);//左上
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
+	    			gl.glEnd();
+    	        } else {
+	    			gl.glBegin(gl.GL_TRIANGLES);
+	    			gl.glTexCoord2f(textureLeft, textureBottom);//左下
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
+	    			gl.glTexCoord2f(textureRight, textureBottom); //右下
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1),y+1);
+	    			gl.glTexCoord2f(textureLeft, textureTop);//左上
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
+	    			gl.glEnd();
+	    			
+	    			gl.glBegin(gl.GL_TRIANGLES);
+	    			gl.glTexCoord2f(textureRight, textureBottom); //右下
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1),y+1);
+	    			gl.glTexCoord2f(textureRight, textureTop);//右上
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1),y+1);
+	    			gl.glTexCoord2f(textureLeft, textureTop);//左上
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
+	    			gl.glEnd();
+    	        }
     			
-    			//这是网格线,polygonoffset好像不对?
-    			gl.glColor3d(0.0, 0.0, 0.0);
-    			//方向必须是逆时针
-    			gl.glBegin(gl.GL_LINE_LOOP);
-    			gl.glVertex3d(i,this.getGridAltitude(i, y)+0.01,y);
-    			gl.glVertex3d(i,this.getGridAltitude(i, y+1)+0.01,y+1);
-    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1)+0.01,y+1);
-    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y)+0.01,y);
-    			gl.glEnd();
-    			gl.glDisable( GL.GL_POLYGON_OFFSET_FILL ); 
+    			if(!drawTriangle){
+	    			//这是网格线,polygonoffset好像不对?
+	    			gl.glColor3d(0.0, 0.0, 0.0);
+	    			//方向必须是逆时针
+	    			gl.glBegin(gl.GL_LINE_LOOP);
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y)+0.01,y);
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1)+0.01,y+1);
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1)+0.01,y+1);
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y)+0.01,y);
+	    			gl.glEnd();
+	    			gl.glDisable( GL.GL_POLYGON_OFFSET_FILL ); 
+    			} else {
+    				gl.glColor3d(0.0, 0.0, 0.0);
+    				gl.glBegin(gl.GL_LINE_LOOP);
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1),y+1);
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
+	    			gl.glEnd();
+	    			
+	    			gl.glBegin(gl.GL_LINE_LOOP);
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1)+0.01,y+1);
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1)+0.01,y+1);
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y)+0.01,y);
+	    			gl.glEnd();
+    			}
     		}
     	}
     	drawAvatar(gl);
@@ -228,12 +268,21 @@ public class Terrain {
     	int xd = (int) Math.floor(x);
     	int zu = (int) Math.ceil(z);
     	int zd = (int) Math.floor(z);
-    		
-    	double r1 = (xu-x)*getGridAltitude(xd, zd) + (x-xd)*getGridAltitude(xu,zd);
-    	double r2 = (xu-x)*getGridAltitude(xd, zu) + (x-xd)*getGridAltitude(xu,zu);
-        altitude = (zu-z)*r1+(z-zd)*r2;
-        if(debug) {
-    		System.out.println("r1: "+r1);
+    	if(zu!=z && x!=xu){
+	    	double r1 = Math.abs((xu-x)*getGridAltitude(xd, zd)) + Math.abs((x-xd)*getGridAltitude(xu,zd));
+	    	double r2 = Math.abs((xu-x)*getGridAltitude(xd, zu)) +  Math.abs((x-xd)*getGridAltitude(xu,zu));
+	        altitude = (zu-z)*r1+(z-zd)*r2;
+	        if(debug) {
+	    		System.out.println("r1: "+r1);
+	    	}
+    	} else if(zu == z && xu != x){ //当z是整数时
+    		double r1 = Math.abs((xu-x)*getGridAltitude(xd, zd)) + Math.abs((x-xd)*getGridAltitude(xu,zd));
+    		return r1;
+    	} else if(xu == x && zu != z){ //当x是整数时
+    		double r1 = Math.abs((zu-z)*getGridAltitude(xd, zd)) + Math.abs((z-zd)*getGridAltitude(xd,zu));
+    		return r1;
+    	} else if(xu == x && zu == z){ //当x z都是整数时
+    		return getGridAltitude((int)x,(int)z);
     	}
         return altitude;
     }
