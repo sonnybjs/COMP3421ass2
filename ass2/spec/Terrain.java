@@ -1,24 +1,17 @@
 package ass2.spec;
 
 import java.awt.Dimension;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureCoords;
 
 
-import sailing.objects.Island;
+//import sailing.objects.Island;
 
 /**
  * COMMENT: Comment HeightMap 
@@ -33,49 +26,139 @@ public class Terrain {
     private List<Road> myRoads;
     private float[] mySunlight;
     final public boolean debug = true;
-    
+    boolean drawTriangle = false;
     
     /**
      * 从地面到树到路都要画出来
      * @param gl
      */
-    public void draw(GL2 gl){
-    	gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);  
+    public void draw(GL2 gl, Texture groundTexture, Texture treeTexture, Texture roadTexture){
+    	//gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);  
         //重置模型观察矩阵  
-    	gl.glColor3d(0.0, 0.0, 0.0);
+    	
     	if(debug) {
 			System.out.println("HEIGHT is "+mySize.getHeight() +" width is "+ mySize.getWidth());
 		}
+		
+		
     	//画地面
+    	float textureTop, textureBottom, textureLeft, textureRight;
+    	TextureCoords textureCoords = groundTexture.getImageTexCoords();
+        textureTop = textureCoords.top();
+        textureBottom = textureCoords.bottom();
+        textureLeft = textureCoords.left();
+        textureRight = textureCoords.right();
+        
+        // Enables this texture's target in the current GL context's state.
+        groundTexture.enable(gl);  // same as gl.glEnable(texture.getTarget());
+        // gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_REPLACE);
+        // Binds this texture to the current GL context.
+        groundTexture.bind(gl);  // same as gl.glBindTexture(texture.getTarget(), texture.getTextureObject());
+    	
     	for(int i = 0; i< mySize.getHeight()-1 ; i++) { //loop from 1 to 9 
     		for(int y = 0; y< mySize.getWidth()-1; y++) {
     			if(debug) {
     				System.out.println("i:"+i+" y:"+y+" altitute:"+this.getGridAltitude(i, y));
     			}
     			//方向必须是逆时针
-    			gl.glBegin(gl.GL_LINE_LOOP);
-    			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
-    			gl.glVertex3d(i,this.getGridAltitude(i, y+1),y+1);
-    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1),y+1);
-    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
-    			gl.glEnd();
+    			gl.glColor3d(102/255d, 102/255d, 0.0);
+    			/** 
+    	         * 如果您在您的场景中使用多个纹理，您应该使用来 
+    	         *  glBindTexture(GL_TEXTURE_2D, texture[ 所使用纹理对应的数字 ]) 
+    	         * 选择要绑定的纹理。当您想改变纹理时，应该绑定新的纹理。 
+    	         * 有一点值得指出的是，您不能在 glBegin() 和 glEnd() 之间绑定纹理， 
+    	         * 必须在 glBegin() 之前或 glEnd() 之后绑定。 
+    	         */  
+    	       // gl.glBindTexture(GL2.GL_TEXTURE_2D, texture);  
+	    	        if(!drawTriangle){
+	    			gl.glBegin(gl.GL_QUADS);
+	    			/*double[] a = {i,this.getGridAltitude(i, y),y};
+	    			double[] b = {i,this.getGridAltitude(i, y+1),y+1};
+	    			double[] c = {i+1,this.getGridAltitude(i+1, y+1),y+1};
+	    			double[] n = MathUtil.normal(a, b, c);
+	    			*/
+	    			//gl.glNormal3d(0, 1, 0);
+	    			gl.glTexCoord2f(textureLeft, textureBottom);//左下
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
+	    			gl.glTexCoord2f(textureRight, textureBottom); //右下
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1),y+1);
+	    			gl.glTexCoord2f(textureRight, textureTop);//右上
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1),y+1);
+	    			gl.glTexCoord2f(textureLeft, textureTop);//左上
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
+	    			gl.glEnd();
+    	        } else {
+	    			gl.glBegin(gl.GL_TRIANGLES);
+	    			gl.glTexCoord2f(textureLeft, textureBottom);//左下
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
+	    			gl.glTexCoord2f(textureRight, textureBottom); //右下
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1),y+1);
+	    			gl.glTexCoord2f(textureLeft, textureTop);//左上
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
+	    			gl.glEnd();
+	    			
+	    			gl.glBegin(gl.GL_TRIANGLES);
+	    			gl.glTexCoord2f(textureRight, textureBottom); //右下
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1),y+1);
+	    			gl.glTexCoord2f(textureRight, textureTop);//右上
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1),y+1);
+	    			gl.glTexCoord2f(textureLeft, textureTop);//左上
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
+	    			gl.glEnd();
+    	        }
+    			
+    			if(!drawTriangle){
+	    			//这是网格线,polygonoffset好像不对?
+	    			gl.glColor3d(0.0, 0.0, 0.0);
+	    			//方向必须是逆时针
+	    			gl.glBegin(gl.GL_LINE_LOOP);
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y)+0.01,y);
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1)+0.01,y+1);
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1)+0.01,y+1);
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y)+0.01,y);
+	    			gl.glEnd();
+	    			gl.glDisable( GL.GL_POLYGON_OFFSET_FILL ); 
+    			} else {
+    				gl.glColor3d(0.0, 0.0, 0.0);
+    				gl.glBegin(gl.GL_LINE_LOOP);
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1),y+1);
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
+	    			gl.glEnd();
+	    			
+	    			gl.glBegin(gl.GL_LINE_LOOP);
+	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1)+0.01,y+1);
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1)+0.01,y+1);
+	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y)+0.01,y);
+	    			gl.glEnd();
+    			}
     		}
     	}
-    	drawTrees(gl);
+    	drawAvatar(gl);
+    	drawTrees(gl,treeTexture);
     	//每个drawtree都有gl.glPopMatrix();所以现在回到了地图原点
     	//gl.glPopMatrix();
-    	drawRoad(gl);
+    	drawRoad(gl, roadTexture);
     }
     
-    public void drawTrees(GL2 gl){
+    public Avatar getAvatar(){
+    	return avatar;
+    }
+    
+    private Avatar avatar = new Avatar(this);
+    public void drawAvatar(GL2 gl){    	
+    	avatar.draw(gl);
+    }
+    
+    public void drawTrees(GL2 gl,Texture TreeTexture){
     	for(Tree tree : myTrees){
-    		tree.draw(gl);
+    		tree.draw(gl,TreeTexture);
     	}
     }
     
-    public void drawRoad(GL2 gl){
+    public void drawRoad(GL2 gl,Texture texture){
     	for(Road road: myRoads){
-    		road.draw(gl);
+    		road.draw(gl, texture);
     	}
     }
     
@@ -185,12 +268,21 @@ public class Terrain {
     	int xd = (int) Math.floor(x);
     	int zu = (int) Math.ceil(z);
     	int zd = (int) Math.floor(z);
-    		
-    	double r1 = (xu-x)*getGridAltitude(xd, zd) + (x-xd)*getGridAltitude(xu,zd);
-    	double r2 = (xu-x)*getGridAltitude(xd, zu) + (x-xd)*getGridAltitude(xu,zu);
-        altitude = (zu-z)*r1+(z-zd)*r2;
-        if(debug) {
-    		System.out.println("r1: "+r1);
+    	if(zu!=z && x!=xu){
+	    	double r1 = Math.abs((xu-x)*getGridAltitude(xd, zd)) + Math.abs((x-xd)*getGridAltitude(xu,zd));
+	    	double r2 = Math.abs((xu-x)*getGridAltitude(xd, zu)) +  Math.abs((x-xd)*getGridAltitude(xu,zu));
+	        altitude = (zu-z)*r1+(z-zd)*r2;
+	        if(debug) {
+	    		System.out.println("r1: "+r1);
+	    	}
+    	} else if(zu == z && xu != x){ //当z是整数时
+    		double r1 = Math.abs((xu-x)*getGridAltitude(xd, zd)) + Math.abs((x-xd)*getGridAltitude(xu,zd));
+    		return r1;
+    	} else if(xu == x && zu != z){ //当x是整数时
+    		double r1 = Math.abs((zu-z)*getGridAltitude(xd, zd)) + Math.abs((z-zd)*getGridAltitude(xd,zu));
+    		return r1;
+    	} else if(xu == x && zu == z){ //当x z都是整数时
+    		return getGridAltitude((int)x,(int)z);
     	}
         return altitude;
     }
@@ -234,7 +326,7 @@ public class Terrain {
     
     public void triangleTest(GL2 gl){
     	//所有的面都要按照逆时针绘制！！//清理屏幕和深度缓存  
-        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);  
+        //gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);  
         //重置模型观察矩阵  
         gl.glLoadIdentity();  
         //将绘制中心左移1.5个单位，向屏幕里移入6个单位  
