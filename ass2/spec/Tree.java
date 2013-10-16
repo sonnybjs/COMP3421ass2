@@ -36,7 +36,7 @@ public class Tree {
 		gl.glTranslated(0.0f,treeRadius+treeHeight,0.0f);
 		//球体,位置在radius+height的地方(中心位置)
 		gl.glColor3f(51/255f,102/255f, 0.0f);
-		glu.gluSphere(cylinder, 0.4, 25, 25);
+		glu.gluSphere(cylinder, 0.4, 25, 25); //？？没有NORMAL？没有texture？？
     	gl.glPopMatrix();
     }
     
