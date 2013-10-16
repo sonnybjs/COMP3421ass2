@@ -1,12 +1,23 @@
 package ass2.spec;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 
 public class MathTest {
-	 private static final double EPSILON = 0.001;
+	 //private static final double EPSILON = 0.001;
+	 
+	 @Test
+	 public void testNormal(){
+		 //0 0 0, 0 0 1, 1 0 0
+		 double[] a = {0,0,0,1};
+		 double[] c = {0,1,0,1};
+		 double[] b = {0,1,1,1};
+		 System.out.println("--------testNormal-----------");
+		 double[] r = MathUtil.normal(a, b, c);
+		 System.out.println("result: "+r[0]+" "+r[1]+" "+r[2]);
+	 }
+	 
+	 
 	@Test
 	public void testRotation() {
 		System.out.println("------------test rotation--------");

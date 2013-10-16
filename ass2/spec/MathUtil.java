@@ -9,7 +9,7 @@ package ass2.spec;
  */
 public class MathUtil {
 
-	final public boolean debug = true;
+	final public static boolean debug = true;
 
 	/**
 	 * Normalise an angle to the range (-180, 180]
@@ -228,21 +228,37 @@ public class MathUtil {
 	}
 
 	public static double[] normal(double[] a, double[] b, double[] c) {
-		double[] n = new double[2];
+		double[] n = new double[3];
 		// 点1-点2得向量1
-		double[] v1 = { a[0] - b[0], a[1] - b[1], a[2] - b[2], a[3] };
+		double[] v1 = { a[0] - b[0], a[1] - b[1], a[2] - b[2] };
 		// 点1-点3得向量2
-		double[] v2 = { a[0] - c[0], a[1] - c[1], a[2] - c[2], a[3] };
+		double[] v2 = { a[0] - c[0], a[1] - c[1], a[2] - c[2]};
 		// 向量1和向量2 叉乘 得法线向量的方向
 		double[] roughN = { v1[1] * v2[2] - v1[2] * v2[1],
 				v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0] };
 		//a * b = [a2b3 -a3b2, a3b1 -a1b3, a1b2- a2b1]
-		// 法线向量单位化
-		double abs = Math.sqrt(roughN[0] * roughN[0] + roughN[1] * roughN[1]
-				+ roughN[2] * roughN[2]);
-		n[0] = roughN[0]/abs;
-		n[1] = roughN[1]/abs;
-		n[2] = roughN[2]/abs;
+		n = roughN;
+		
+		if(debug){
+			System.out.println("normal: v1 is "+ v1[0]+" "+v1[1]+" "+v1[2]);
+			System.out.println("v2 is "+ v2[0]+" "+v2[1]+" "+v2[2]);
+			System.out.println("roughN is "+ roughN[0]+" "+roughN[1]+" "+roughN[2]);
+		}
+		return n;
+	}
+	
+	/**
+	 * normalise a vector
+	 * @param origi the original vector
+	 * @return
+	 */
+	public static double[] normaliseVector(double[] origi){
+		double[] n = new double[3];
+		double abs = Math.sqrt(origi[0] * origi[0] + origi[1] * origi[1]
+				+ origi[2] * origi[2]);
+		n[0] = origi[0]/abs;
+		n[1] = origi[1]/abs;
+		n[2] = origi[2]/abs;
 		return n;
 	}
 

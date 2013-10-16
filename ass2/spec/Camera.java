@@ -6,16 +6,16 @@ import static javax.media.opengl.GL.GL_TEXTURE_MAG_FILTER;
 import static javax.media.opengl.GL.GL_TEXTURE_MIN_FILTER;
 
 import java.io.IOException;
-import java.io.InputStream;
 
-import javax.media.opengl.*;
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.GLEventListener;
+import javax.media.opengl.GLException;
 import javax.media.opengl.glu.GLU;
 import javax.swing.JLabel;
 
-import com.jogamp.opengl.util.gl2.GLUT;
 import com.jogamp.opengl.util.texture.Texture;
-import com.jogamp.opengl.util.texture.TextureCoords;
-import com.jogamp.opengl.util.texture.TextureData;
 import com.jogamp.opengl.util.texture.TextureIO;
 
 public class Camera implements GLEventListener {
@@ -79,16 +79,18 @@ public class Camera implements GLEventListener {
 				+ myTerrain.getAvatar().z + "<P>angle:" + avatarAngle
 				+ "<P>Light:" + "<P>Sunlight direction:"
 				+ myTerrain.getSunlight()[0] + " " + myTerrain.getSunlight()[1]
-				+ " " + myTerrain.getSunlight()[2] + " " + "<P>luminance"
-				+ "<P>ambient " + ambient + "<P>diffuse" + diffuse +
-
+						+ " " + myTerrain.getSunlight()[2] + " " + "<P>luminance"
+						+ "<P>ambient " + ambient + "<P>diffuse" + diffuse +
+						"<P>Time" + time + "<P>sun Color: "+color[0]*255+" "+color[1]*255+" "+color[2]*255+
 				"</HTML>");
 	}
 
-	public double sunRotate = 0.0;
-	public int time = 14; // 0~24, 25frame per hour in world
+	//public double sunRotate = 0.0;
+	public double time = 0; // 0~24, 25frame per hour in world
+	//time=14时，sunrotate=0
 	public double[] lightDirAt8 = { -1, 0, 0, 1 };
-
+	double[] color = {1.0,1.0,1.0};
+	@SuppressWarnings("unused")
 	private double[] getLightDirection() {
 		double angle = (time - 8) / 24 * 360.0;
 		double[] lightDir = MathUtil
@@ -99,35 +101,60 @@ public class Camera implements GLEventListener {
 
 	private void setLighting(GL2 gl) { // TODO 此处需要调试 并且太阳位置在sunlight
 		gl.glPushMatrix();
-		/*
-		if(time >= 24){
-			time = 0;
-		}
-		*/
-		time += 1/25;
-		sunRotate += 0.6;
+		time += 0.04;
+		if(time >= 24){ time = 0; }
+		double sunRotate = time*15;
 		gl.glRotated(sunRotate, 0.0, 0.0, 1.0); // 用于太阳的旋转,working now
 		gl.glShadeModel(GL2.GL_SMOOTH);
 		if (debug) {
 			System.out.println("LIghting lumi:ambient " + ambient + " diffuse "
-					+ diffuse );
+					+ diffuse);
 		}
+		
+		
+		if(time >= 0 && time<8){ // 蓝
+			color[0] = 0.0;
+			color[1] = 102/255d;
+			color[2] = 1.0;
+			//blue = 0,102,255
+		} else if (time >=8 && time <=18){ //蓝->黄
+			//yellow = 255,255,51
+			color[0] = (time-8)/(18-8) ; //0->255
+			color[1] = (102+(255-102)*(time-8)/(18-8))/255; //102->255
+			color[2] = (255-(255-51)*(time-8)/(18-8))/255; //255->51
+		} else if(time > 18 && time <=19){
+			color[0] = 1.0;
+			color[1] = 1.0;
+			color[2] = 51/255d;
+		} else if( time >19 && time <24){//黄->蓝
+			color[0] = 1-(time-19)/(24-19); //255->0
+			color[1] = (255-(255-102)*(time-19)/(24-19))/255;
+			color[2] = (51+(255-51)*(time-19)/(24-19))/255;
+		}
+		
+		
 		float[] a = new float[4];
-		a[0] = a[1] = a[2] = ambient;
+		a[0] = (float) (color[0]* ambient);
+		a[1] = (float) (color[1]* ambient);
+		a[2] = (float) (color[2]* ambient);
+		//a[0] = a[1] = a[2] = ambient;
 		a[3] = 1.0f;
 		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, a, 0); // a是亮度,位置和LIGHT0绑在一起了
 		float[] ambientPos = new float[] { 1.0f, 0.0f, 1.0f, 1.0f }; // 最后一个数值,1是位置,0是方向
 		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, ambientPos, 0);
 
 		float[] d = new float[4];
-		d[0] = d[1] = d[2] = diffuse;
+		d[0] = (float) (color[0]*diffuse);
+		d[1] = (float) (color[1]*diffuse);
+		d[2] = (float) (color[2]*diffuse);
+		//d[0] = d[1] = d[2] = diffuse;
 		d[3] = 1.0f;
 		gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_DIFFUSE, d, 0);
 		float[] diffusePos = new float[] { 1.0f, 5.0f, 5.0f, 0.0f }; // 方向性
 		diffusePos[0] = myTerrain.getSunlight()[0];
 		diffusePos[1] = myTerrain.getSunlight()[1];
 		diffusePos[2] = myTerrain.getSunlight()[2];
-		
+
 		gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, diffusePos, 0);
 		gl.glPopMatrix();
 	}
@@ -143,7 +170,7 @@ public class Camera implements GLEventListener {
 	private void drawCoor(GL2 gl) {
 		gl.glColor3f(0.0f, 0.0f, 1.0f);// blue
 		gl.glColor3d(1.0, 0.0, 0.0);
-		gl.glBegin(gl.GL_LINES);
+		gl.glBegin(GL.GL_LINES);
 		gl.glVertex3d(0.0, 0.0, 0.0);
 		gl.glVertex3d(30.0, 0.0, 0.0);
 		gl.glColor3d(0.0, 1.0, 0.0);

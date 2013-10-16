@@ -27,7 +27,7 @@ public class Avatar {
 		gl.glColor3f(1.0f, 1.0f, 1.0f);
 		GLUquadric obj = glu.gluNewQuadric();
     	//glu.gluQuadricTexture(cylinder, true);
-    	glu.gluQuadricNormals(obj, glu.GLU_SMOOTH);
+    	glu.gluQuadricNormals(obj, GLU.GLU_SMOOTH);
 		glu.gluCylinder(obj , radius, radius, height, 3, 10);
 		
 		

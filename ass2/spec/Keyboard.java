@@ -1,10 +1,7 @@
 package ass2.spec;
 
-import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 
 public class Keyboard implements KeyListener{
 
@@ -53,11 +50,11 @@ public class Keyboard implements KeyListener{
 	        	myCamera.stepBackward();
 	            break;
 	        
-			case KeyEvent.VK_PAGE_DOWN:
+			case KeyEvent.VK_P:
 				myCamera.rotateLeft();
 	        	break;
 	    
-			case KeyEvent.VK_PAGE_UP:
+			case KeyEvent.VK_O:
 				myCamera.rotateRight();
 				break;
 			case KeyEvent.VK_W:

@@ -71,13 +71,13 @@ public class Terrain {
     	         */  
     	       // gl.glBindTexture(GL2.GL_TEXTURE_2D, texture);  
 	    	        if(!drawTriangle){
-	    			gl.glBegin(gl.GL_QUADS);
-	    			/*double[] a = {i,this.getGridAltitude(i, y),y};
+	    			gl.glBegin(GL2.GL_QUADS);
+	    			double[] a = {i,this.getGridAltitude(i, y),y};
 	    			double[] b = {i,this.getGridAltitude(i, y+1),y+1};
 	    			double[] c = {i+1,this.getGridAltitude(i+1, y+1),y+1};
 	    			double[] n = MathUtil.normal(a, b, c);
-	    			*/
-	    			//gl.glNormal3d(0, 1, 0);
+	    			
+	    			gl.glNormal3d(n[0], n[1], n[2]);
 	    			gl.glTexCoord2f(textureLeft, textureBottom);//左下
 	    			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
 	    			gl.glTexCoord2f(textureRight, textureBottom); //右下
@@ -88,7 +88,7 @@ public class Terrain {
 	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
 	    			gl.glEnd();
     	        } else {
-	    			gl.glBegin(gl.GL_TRIANGLES);
+	    			gl.glBegin(GL.GL_TRIANGLES);
 	    			gl.glTexCoord2f(textureLeft, textureBottom);//左下
 	    			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
 	    			gl.glTexCoord2f(textureRight, textureBottom); //右下
@@ -97,7 +97,7 @@ public class Terrain {
 	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
 	    			gl.glEnd();
 	    			
-	    			gl.glBegin(gl.GL_TRIANGLES);
+	    			gl.glBegin(GL.GL_TRIANGLES);
 	    			gl.glTexCoord2f(textureRight, textureBottom); //右下
 	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1),y+1);
 	    			gl.glTexCoord2f(textureRight, textureTop);//右上
@@ -111,7 +111,7 @@ public class Terrain {
 	    			//这是网格线,polygonoffset好像不对?
 	    			gl.glColor3d(0.0, 0.0, 0.0);
 	    			//方向必须是逆时针
-	    			gl.glBegin(gl.GL_LINE_LOOP);
+	    			gl.glBegin(GL.GL_LINE_LOOP);
 	    			gl.glVertex3d(i,this.getGridAltitude(i, y)+0.01,y);
 	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1)+0.01,y+1);
 	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1)+0.01,y+1);
@@ -120,13 +120,13 @@ public class Terrain {
 	    			gl.glDisable( GL.GL_POLYGON_OFFSET_FILL ); 
     			} else {
     				gl.glColor3d(0.0, 0.0, 0.0);
-    				gl.glBegin(gl.GL_LINE_LOOP);
+    				gl.glBegin(GL.GL_LINE_LOOP);
 	    			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
 	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1),y+1);
 	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
 	    			gl.glEnd();
 	    			
-	    			gl.glBegin(gl.GL_LINE_LOOP);
+	    			gl.glBegin(GL.GL_LINE_LOOP);
 	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1)+0.01,y+1);
 	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1, y+1)+0.01,y+1);
 	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y)+0.01,y);

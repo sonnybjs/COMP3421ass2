@@ -8,10 +8,11 @@ import javax.media.opengl.GL2;
 
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureCoords;
+
 //import javax.vecmath.Matrix3d;
 /**
- * COMMENT: Comment Road 
- *
+ * COMMENT: Comment Road
+ * 
  * @author malcolmr
  */
 public class Road {
@@ -21,14 +22,13 @@ public class Road {
 	public final boolean debug = true;
 	private Terrain myTerrain;
 
-	public double altitude(double x, double z){
+	public double altitude(double x, double z) {
 		return myTerrain.altitude(x, z);
 	}
 
-	public void draw(GL2 gl, Texture texture){
+	public void draw(GL2 gl, Texture texture) {
 
 		// 1 重复求t=0~1的每个点的x , z -> points[2]
-
 
 		// 2 通过 x, z 求得altitude -> y
 		// 3 算出t=0~0.1之间的切线向量 表示为tangent[3],这个是t=0的切线,与t=0.1的无关
@@ -38,7 +38,7 @@ public class Road {
 
 		// 7 重复计算直到算出t=0.9的切线向量,取t=0.9~1的切线,最后t=1.0的切线等于t=0.9的切线
 		double[] scaleRotateTangent = new double[4];
-		gl.glColor3d(110/255d, 110/255d, 110/255d);
+		gl.glColor3d(110 / 255d, 110 / 255d, 110 / 255d);
 
 		float textureTop, textureBottom, textureLeft, textureRight;
 		TextureCoords textureCoords = texture.getImageTexCoords();
@@ -48,54 +48,80 @@ public class Road {
 		textureRight = textureCoords.right();
 
 		// Enables this texture's target in the current GL context's state.
-		texture.enable(gl);  // same as gl.glEnable(texture.getTarget());
-		// gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_REPLACE);
+		texture.enable(gl); // same as gl.glEnable(texture.getTarget());
+		// gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE,
+		// GL.GL_REPLACE);
 		// Binds this texture to the current GL context.
-		texture.bind(gl);  // same as gl.glBindTexture(texture.getTarget(), texture.getTextureObject());
-		gl.glBegin(gl.GL_QUAD_STRIP);
+		texture.bind(gl); // same as gl.glBindTexture(texture.getTarget(),
+		// texture.getTextureObject());
+
 		double offset = 0.001;
-		for(double t = 0.0 ; t <= 0.9; t += 0.1){ //t=0.0和t=1.0的点很奇怪
+		double roadSegment = 0.05;
+		for (double t = 0.0; t <= 0.9; t += roadSegment) { // t=0.0和t=1.0的点很奇怪
 			double[] point0 = point(t);
-			double x0 = point0[0];
+			double x0 = point0[0]; // 点B
 			double z0 = point0[1];
 			double y0 = altitude(x0, z0) + offset;
-			double[] midpoint = {x0,y0,z0};
+			double[] midpoint = { x0, y0, z0 };
 
-			double t1 = t+0.1;
+			double t1 = t + roadSegment;
 			double[] point1 = point(t1);
-			double x1 = point1[0];
+			double x1 = point1[0]; // 点A
 			double z1 = point1[1];
-			double y1 = altitude(x1,z1) + offset;
+			double y1 = altitude(x1, z1) + offset;
 
-			double[] tangent = {x1-x0, y1-y0, z1-z0,1}; //for matrix calculation
-			if(debug){
-				System.out.println("In Road: t is "+t+" point is "+ x0+" "+ y0+" "+ z0+" ");
-				System.out.println(" Tangent is "+ tangent[0]+" "+ tangent[1]+" "+ tangent[2]+" ");
+			double[] tangent = { x1 - x0, y1 - y0, z1 - z0, 1 }; // for matrix
+			// calculation
+			if (debug) {
+				System.out.println("In Road: t is " + t + " point is " + x0
+						+ " " + y0 + " " + z0 + " ");
+				System.out.println(" Tangent is " + tangent[0] + " "
+						+ tangent[1] + " " + tangent[2] + " ");
 			}
 
-			double[] rotateTangent = MathUtil.multiply(MathUtil.rotationMatrix(90,false,true,false), tangent); 
-
-			scaleRotateTangent = MathUtil.multiply(MathUtil.scaleMatrix(myWidth/2), rotateTangent);
-			double[] result0 = {scaleRotateTangent[0]+midpoint[0],scaleRotateTangent[1]+midpoint[1],scaleRotateTangent[2]+midpoint[2]};
-			double[] result1 = {-scaleRotateTangent[0]+midpoint[0],-scaleRotateTangent[1]+midpoint[1],-scaleRotateTangent[2]+midpoint[2]};
+			double[] rotateTangent = MathUtil.multiply(
+					MathUtil.rotationMatrix(90, false, true, false), tangent);
+			double[] normalisedVector = MathUtil.normaliseVector(rotateTangent);
+			double[] nv4cal = {normalisedVector[0],normalisedVector[1],normalisedVector[2],1};
+			scaleRotateTangent = MathUtil.multiply(
+					MathUtil.scaleMatrix(myWidth / 2),
+					nv4cal);
+			double[] rightbottom = { scaleRotateTangent[0] + midpoint[0],
+					scaleRotateTangent[1] + midpoint[1],
+					scaleRotateTangent[2] + midpoint[2] };
+			double[] leftbottom = { -scaleRotateTangent[0] + midpoint[0],
+					-scaleRotateTangent[1] + midpoint[1],
+					-scaleRotateTangent[2] + midpoint[2] };
+			double[] lefttop = { -scaleRotateTangent[0] + x1,
+					-scaleRotateTangent[1] + y1, -scaleRotateTangent[2] + z1 };
+			double[] righttop = { scaleRotateTangent[0] + x1,
+					scaleRotateTangent[1] + y1, scaleRotateTangent[2] + z1 };
+			double[] normal = MathUtil
+					.normal(leftbottom, rightbottom, righttop);
+			gl.glBegin(gl.GL_QUADS);
+			gl.glNormal3d(-normal[0], -normal[1], -normal[2]);
 			gl.glTexCoord2f(textureLeft, textureBottom);
-			gl.glVertex3d(result0[0], result0[1], result0[2]);
+			gl.glVertex3d(rightbottom[0], rightbottom[1], rightbottom[2]);// --
 			gl.glTexCoord2f(textureRight, textureBottom);
-			gl.glVertex3d(result1[0], result1[1], result1[2]); 	    		
+			gl.glVertex3d(righttop[0], righttop[1], righttop[2]); // --
 			gl.glTexCoord2f(textureRight, textureTop);
-			gl.glVertex3d(scaleRotateTangent[0]+x1, scaleRotateTangent[1]+y1, scaleRotateTangent[2]+z1);
+			gl.glVertex3d(lefttop[0], lefttop[1], lefttop[2]);// --
 			gl.glTexCoord2f(textureLeft, textureTop);
-			gl.glVertex3d(-scaleRotateTangent[0]+x1, -scaleRotateTangent[1]+y1, -scaleRotateTangent[2]+z1);
-			if(debug){
-				System.out.println("In Road: +side "+ result0[0]+" "+ result0[1]+" "+ result0[2]+" ");
-
-				System.out.println("In Road: -side "+ result1[0]+" "+ result1[1]+" "+ result1[2]+" ");
+			gl.glVertex3d(leftbottom[0], leftbottom[1], leftbottom[2]);// --
+			gl.glEnd();
+			if (debug) {
+				// System.out.println("In Road: +side "+ result0[0]+" "+
+				// result0[1]+" "+ result0[2]+" ");
+				System.out.println("In Road: normal " + normal[0] + " "
+						+ normal[1] + " " + normal[2] + " ");
+				// System.out.println("In Road: -side "+ result1[0]+" "+
+				// result1[1]+" "+ result1[2]+" ");
 			}
 		}
-		gl.glEnd();
+
 	}
 
-	/** 
+	/**
 	 * Create a new road starting at the specified point
 	 */
 	public Road(double width, double x0, double y0) {
@@ -106,8 +132,8 @@ public class Road {
 	}
 
 	/**
-	 * Create a new road with the specified spine 
-	 *
+	 * Create a new road with the specified spine
+	 * 
 	 * @param width
 	 * @param spine
 	 */
@@ -130,8 +156,9 @@ public class Road {
 	}
 
 	/**
-	 * Add a new segment of road, beginning at the last point added and ending at (x3, y3).
-	 * (x1, y1) and (x2, y2) are interpolated as bezier control points.
+	 * Add a new segment of road, beginning at the last point added and ending
+	 * at (x3, y3). (x1, y1) and (x2, y2) are interpolated as bezier control
+	 * points.
 	 * 
 	 * @param x1
 	 * @param y1
@@ -140,13 +167,14 @@ public class Road {
 	 * @param x3
 	 * @param y3
 	 */
-	public void addSegment(double x1, double y1, double x2, double y2, double x3, double y3) {
+	public void addSegment(double x1, double y1, double x2, double y2,
+			double x3, double y3) {
 		myPoints.add(x1);
 		myPoints.add(y1);
 		myPoints.add(x2);
 		myPoints.add(y2);
 		myPoints.add(x3);
-		myPoints.add(y3);        
+		myPoints.add(y3);
 	}
 
 	/**
@@ -166,11 +194,10 @@ public class Road {
 	 */
 	public double[] controlPoint(int i) {
 		double[] p = new double[2];
-		p[0] = myPoints.get(i*2);
-		p[1] = myPoints.get(i*2+1);
+		p[0] = myPoints.get(i * 2);
+		p[1] = myPoints.get(i * 2 + 1);
 		return p;
 	}
-
 
 	/**
 	 * Get a point on the spine. The parameter t may vary from 0 to size().
@@ -181,55 +208,52 @@ public class Road {
 	 */
 	public double[] point(double t) {
 		/*
-		int i = (int)Math.floor(t);
-		t = t - i;
-
-		i *= 6;
-
-		double x0 = myPoints.get(i++);
-		double y0 = myPoints.get(i++);
-		double x1 = myPoints.get(i++);
-		double y1 = myPoints.get(i++);
-		double x2 = myPoints.get(i++);
-		double y2 = myPoints.get(i++);
-		double x3 = myPoints.get(i++);
-		double y3 = myPoints.get(i++);
-
-		double[] p = new double[2];
-
-		p[0] = b(0, t) * x0 + b(1, t) * x1 + b(2, t) * x2 + b(3, t) * x3;
-		p[1] = b(0, t) * y0 + b(1, t) * y1 + b(2, t) * y2 + b(3, t) * y3;        
-		if(debug){
-			System.out.println("--------------------------p is "+ p[0]+" "+p[1]);
-			
-		}
-		return p;
-		*/
+		 * int i = (int)Math.floor(t); t = t - i;
+		 * 
+		 * i *= 6;
+		 * 
+		 * double x0 = myPoints.get(i++); double y0 = myPoints.get(i++); double
+		 * x1 = myPoints.get(i++); double y1 = myPoints.get(i++); double x2 =
+		 * myPoints.get(i++); double y2 = myPoints.get(i++); double x3 =
+		 * myPoints.get(i++); double y3 = myPoints.get(i++);
+		 * 
+		 * double[] p = new double[2];
+		 * 
+		 * p[0] = b(0, t) * x0 + b(1, t) * x1 + b(2, t) * x2 + b(3, t) * x3;
+		 * p[1] = b(0, t) * y0 + b(1, t) * y1 + b(2, t) * y2 + b(3, t) * y3;
+		 * if(debug){ System.out.println("--------------------------p is "+
+		 * p[0]+" "+p[1]);
+		 * 
+		 * } return p;
+		 */
 		return perfectBezier(t);
 	}
 
-	public double[] perfectBezier(double t){
+	public double[] perfectBezier(double t) {
 		double[] p = new double[2];
-		
-		int l = myPoints.size()/2-1;
-		for(int k = 0; k < myPoints.size()/2; k++){ //注意mypoint是两个一组,k是指当前项的序数
-			//k=0,1,2,3时. point有8个0~7
-			p[0] += bernstein(l,k,t)* myPoints.get(2*k); //x=0,2,4,6
-			
-			p[1] += bernstein(l,k,t)* myPoints.get(2*k+1); //y=1,3,5,7
-			if(debug){
-				
-				System.out.println("bernstein: "+bernstein(l,k,t)+" point-x: "+myPoints.get( 2*k)+" point-y: "+myPoints.get(2*k+1));
-				System.out.println("result: x "+p[0]+" y "+p[1]);
-				
+
+		int l = myPoints.size() / 2 - 1;
+		for (int k = 0; k < myPoints.size() / 2; k++) { // 注意mypoint是两个一组,k是指当前项的序数
+			// k=0,1,2,3时. point有8个0~7
+			p[0] += bernstein(l, k, t) * myPoints.get(2 * k); // x=0,2,4,6
+
+			p[1] += bernstein(l, k, t) * myPoints.get(2 * k + 1); // y=1,3,5,7
+			if (debug) {
+
+				System.out.println("bernstein: " + bernstein(l, k, t)
+						+ " point-x: " + myPoints.get(2 * k) + " point-y: "
+						+ myPoints.get(2 * k + 1));
+				System.out.println("result: x " + p[0] + " y " + p[1]);
+
 			}
-			
+
 		}
-		if(debug){
-			System.out.println("--------------------------p is "+ p[0]+" "+p[1]);
-			
+		if (debug) {
+			System.out.println("--------------------------p is " + p[0] + " "
+					+ p[1]);
+
 		}
-		
+
 		return p;
 	}
 
@@ -242,16 +266,16 @@ public class Road {
 	 */
 	public double b(int i, double t) {
 
-		switch(i) {
+		switch (i) {
 
 		case 0:
-			return (1-t) * (1-t) * (1-t);
+			return (1 - t) * (1 - t) * (1 - t);
 
 		case 1:
-			return 3 * (1-t) * (1-t) * t;
+			return 3 * (1 - t) * (1 - t) * t;
 
 		case 2:
-			return 3 * (1-t) * t * t;
+			return 3 * (1 - t) * t * t;
 
 		case 3:
 			return t * t * t;
@@ -261,24 +285,24 @@ public class Road {
 		throw new IllegalArgumentException("" + i);
 	}
 
-
-
 	/**
 	 * coeffienct for Bezier with unlimited L and K
+	 * 
 	 * @param i
 	 * @param t
 	 * @return
 	 */
-	private double coefficient(double l, double k){
-		if(l==k || k ==0){
+	private double coefficient(double l, double k) {
+		if (l == k || k == 0) {
 			return 1;
 		}
-		return MathUtil.factorial(l)/(MathUtil.factorial(k)*MathUtil.factorial(l-k));
+		return MathUtil.factorial(l)
+				/ (MathUtil.factorial(k) * MathUtil.factorial(l - k));
 	}
 
-	public double bernstein(int l, int k, double t){
-		
-		return coefficient(l,k) * Math.pow(1-t, l-k) * Math.pow(t, k);
+	public double bernstein(int l, int k, double t) {
+
+		return coefficient(l, k) * Math.pow(1 - t, l - k) * Math.pow(t, k);
 	}
 
 }

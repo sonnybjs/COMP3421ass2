@@ -4,20 +4,13 @@ import java.awt.BorderLayout;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLProfile;
 import javax.media.opengl.awt.GLJPanel;
-import javax.media.opengl.glu.GLU;
 import javax.swing.JFrame;
-import javax.swing.*;
+import javax.swing.JLabel;
 
 import com.jogamp.opengl.util.FPSAnimator;
-
-import ass2.spec.LevelIO;
 
 /**
  * COMMENT: Comment Game
