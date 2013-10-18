@@ -12,7 +12,7 @@ import com.jogamp.opengl.util.texture.Texture;
  * @author malcolmr
  */
 public class Tree {
-	final public boolean debug = true;
+	final public boolean debug = Game.debug;
 	private double[] myPos;
 	Terrain myTerrain;
 	GLU glu = new GLU();
@@ -33,16 +33,7 @@ public class Tree {
 		 * gl.glEnable(GL.GL_TEXTURE_2D); //使用纹理
 		 * gl.glBindTexture(GL.GL_TEXTURE_2D, textureArr[1]);//
 		 */
-		gl.glColor3f(102 / 255f, 51 / 255f, 0.0f); // 棕色
-
-		/*
-		float textureTop, textureBottom, textureLeft, textureRight;
-		TextureCoords textureCoords = treeTexture.getImageTexCoords();
-		textureTop = textureCoords.top();
-		textureBottom = textureCoords.bottom();
-		textureLeft = textureCoords.left();
-		textureRight = textureCoords.right();
-*/
+		gl.glColor3f(102 / 255f, 51 / 255f, 0.0f); 
 		// Enables this texture's target in the current GL context's state.
 		treeTexture.enable(gl); // same as gl.glEnable(texture.getTarget());
 		// gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE,

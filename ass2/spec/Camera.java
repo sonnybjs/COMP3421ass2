@@ -19,7 +19,7 @@ import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 
 public class Camera implements GLEventListener {
-	final public boolean debug = true;
+	final public boolean debug = Game.debug;
 	double xtrans = 0.0;
 	double ytrans = 0.0;
 	double ztrans = 0.0;
@@ -29,14 +29,16 @@ public class Camera implements GLEventListener {
 	float ambient = 0.7f;
 	float diffuse = 1.5f;
 	float specular = 0.3f;
-	JLabel myLabel;
+	JLabel myLabel = Game.label;
 	boolean lightEnable = true;
 	double cameraAvatarDistance = 5.0;
 	boolean flipped = false;
+	public double avatarAngle = 0.0;
+	public double angleStep = 10.0;
+	private double worldRotate = 0.0;
 
-	public Camera(Terrain theTerrain, JLabel label) {
+	public Camera(Terrain theTerrain) {
 		myTerrain = theTerrain;
-		myLabel = label;
 	}
 
 	@Override
@@ -52,19 +54,44 @@ public class Camera implements GLEventListener {
 
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glLoadIdentity();
-		double avatarRadius = avatarAngle * Math.PI / 180.0;
-		double eyex = myTerrain.getAvatar().x - Math.sin(avatarRadius)
-				* cameraAvatarDistance;
-		double eyey = myTerrain.getAvatar().getY() + 3.0;
-		double eyez = myTerrain.getAvatar().z - Math.cos(avatarRadius)
-				* cameraAvatarDistance;
 
-		if (!flipped) {
-			glu.gluLookAt(eyex, eyey, eyez, myTerrain.getAvatar().x, myTerrain
-					.getAvatar().getY(), myTerrain.getAvatar().z, 0, 1, 0);
-		} else {
-			glu.gluLookAt(eyex, -eyey, eyez, myTerrain.getAvatar().x, myTerrain
-					.getAvatar().getY(), myTerrain.getAvatar().z, 0, -1, 0);
+		if (Game.worldCamera == false) {
+			double avatarRadius = avatarAngle * Math.PI / 180.0;
+			double eyex = myTerrain.getAvatar().x - Math.sin(avatarRadius)
+					* cameraAvatarDistance;
+			double eyey = myTerrain.getAvatar().getY() + 3.0;
+			double eyez = myTerrain.getAvatar().z - Math.cos(avatarRadius)
+					* cameraAvatarDistance;
+
+			if (!flipped) {
+				glu.gluLookAt(eyex, eyey, eyez, myTerrain.getAvatar().x,
+						myTerrain.getAvatar().getY(), myTerrain.getAvatar().z,
+						0, 1, 0);
+			} else {
+				glu.gluLookAt(eyex, -eyey, eyez, myTerrain.getAvatar().x,
+						myTerrain.getAvatar().getY(), myTerrain.getAvatar().z,
+						0, -1, 0);
+			}
+
+		} else { // For World Camera
+			double[] worldMidPoint = {
+					myTerrain.size().getWidth() / 2,
+					myTerrain.altitude(myTerrain.size().getWidth()-1, myTerrain
+							.size().getHeight()-1) / 2,
+					myTerrain.size().getHeight() / 2 };
+			double eyex = worldMidPoint[0]
+					+ Math.sin(worldRotate * Math.PI / 180)*(cameraAvatarDistance+ztrans);
+			double eyey = worldMidPoint[0] ;
+			double eyez = worldMidPoint[2]
+					- Math.cos(worldRotate * Math.PI / 180)*(cameraAvatarDistance+ztrans);
+			if (!flipped) {
+				glu.gluLookAt(eyex, eyey, eyez, worldMidPoint[0],
+						worldMidPoint[1], worldMidPoint[2], 0, 1, 0);
+			} else {
+				glu.gluLookAt(eyex, -eyey, eyez, worldMidPoint[0],
+						worldMidPoint[1], worldMidPoint[2], 0, -1, 0);
+			}
+
 		}
 		gl.glPushMatrix();
 
@@ -79,17 +106,18 @@ public class Camera implements GLEventListener {
 				+ myTerrain.getAvatar().z + "<P>angle:" + avatarAngle
 				+ "<P>Light:" + "<P>Sunlight direction:"
 				+ myTerrain.getSunlight()[0] + " " + myTerrain.getSunlight()[1]
-						+ " " + myTerrain.getSunlight()[2] + " " + "<P>luminance"
-						+ "<P>ambient " + ambient + "<P>diffuse" + diffuse +
-						"<P>Time" + time + "<P>sun Color: "+color[0]*255+" "+color[1]*255+" "+color[2]*255+
-				"</HTML>");
+				+ " " + myTerrain.getSunlight()[2] + " " + "<P>luminance"
+				+ "<P>ambient " + ambient + "<P>diffuse" + diffuse + "<P>Time"
+				+ time + "<P>sun Color: " + color[0] * 255 + " " + color[1]
+				* 255 + " " + color[2] * 255 + "</HTML>");
 	}
 
-	//public double sunRotate = 0.0;
+	// public double sunRotate = 0.0;
 	public double time = 0; // 0~24, 25frame per hour in world
-	//time=14时，sunrotate=0
+	// time=14时，sunrotate=0
 	public double[] lightDirAt8 = { -1, 0, 0, 1 };
-	double[] color = {1.0,1.0,1.0};
+	double[] color = { 1.0, 1.0, 1.0 };
+
 	@SuppressWarnings("unused")
 	private double[] getLightDirection() {
 		double angle = (time - 8) / 24 * 360.0;
@@ -99,63 +127,82 @@ public class Camera implements GLEventListener {
 		return lightDir;
 	}
 
-	private void setLighting(GL2 gl) { // TODO 此处需要调试 并且太阳位置在sunlight
-		gl.glPushMatrix();
-		time += 0.04;
-		if(time >= 24){ time = 0; }
-		double sunRotate = time*15;
-		gl.glRotated(sunRotate, 0.0, 0.0, 1.0); // 用于太阳的旋转,working now
+	private void setLighting(GL2 gl) {
 		gl.glShadeModel(GL2.GL_SMOOTH);
-		if (debug) {
-			System.out.println("LIghting lumi:ambient " + ambient + " diffuse "
-					+ diffuse);
-		}
-		
-		
-		if(time >= 0 && time<8){ // 蓝
-			color[0] = 0.0;
-			color[1] = 102/255d;
-			color[2] = 1.0;
-			//blue = 0,102,255
-		} else if (time >=8 && time <=18){ //蓝->黄
-			//yellow = 255,255,51
-			color[0] = (time-8)/(18-8) ; //0->255
-			color[1] = (102+(255-102)*(time-8)/(18-8))/255; //102->255
-			color[2] = (255-(255-51)*(time-8)/(18-8))/255; //255->51
-		} else if(time > 18 && time <=19){
-			color[0] = 1.0;
-			color[1] = 1.0;
-			color[2] = 51/255d;
-		} else if( time >19 && time <24){//黄->蓝
-			color[0] = 1-(time-19)/(24-19); //255->0
-			color[1] = (255-(255-102)*(time-19)/(24-19))/255;
-			color[2] = (51+(255-51)*(time-19)/(24-19))/255;
-		}
-		
-		
-		float[] a = new float[4];
-		a[0] = (float) (color[0]* ambient);
-		a[1] = (float) (color[1]* ambient);
-		a[2] = (float) (color[2]* ambient);
-		//a[0] = a[1] = a[2] = ambient;
-		a[3] = 1.0f;
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, a, 0); // a是亮度,位置和LIGHT0绑在一起了
-		float[] ambientPos = new float[] { 1.0f, 0.0f, 1.0f, 1.0f }; // 最后一个数值,1是位置,0是方向
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, ambientPos, 0);
+		gl.glPushMatrix();
+		if (Game.originSun == false) {
+			time += 0.04;
+			if (time >= 24) {
+				time = 0;
+			}
+			double sunRotate = time * 15;
+			gl.glRotated(sunRotate, 0.0, 0.0, 1.0); // 用于太阳的旋转,working now
+			if (debug) {
+				System.out.println("LIghting lumi:ambient " + ambient
+						+ " diffuse " + diffuse);
+			}
+			if (time >= 0 && time < 8) { // 蓝
+				color[0] = 0.0;
+				color[1] = 102 / 255d;
+				color[2] = 1.0;
+				// blue = 0,102,255
+			} else if (time >= 8 && time <= 18) { // 蓝->黄
+				// yellow = 255,255,51
+				color[0] = (time - 8) / (18 - 8); // 0->255
+				color[1] = (102 + (255 - 102) * (time - 8) / (18 - 8)) / 255; // 102->255
+				color[2] = (255 - (255 - 51) * (time - 8) / (18 - 8)) / 255; // 255->51
+			} else if (time > 18 && time <= 19) {
+				color[0] = 1.0;
+				color[1] = 1.0;
+				color[2] = 51 / 255d;
+			} else if (time > 19 && time < 24) {// 黄->蓝
+				color[0] = 1 - (time - 19) / (24 - 19); // 255->0
+				color[1] = (255 - (255 - 102) * (time - 19) / (24 - 19)) / 255;
+				color[2] = (51 + (255 - 51) * (time - 19) / (24 - 19)) / 255;
+			}
+			float[] a = new float[4];
+			a[0] = (float) (color[0] * ambient);
+			a[1] = (float) (color[1] * ambient);
+			a[2] = (float) (color[2] * ambient);
+			// a[0] = a[1] = a[2] = ambient;
+			a[3] = 1.0f;
+			gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, a, 0); // a是亮度,位置和LIGHT0绑在一起了
+			float[] ambientPos = new float[] { 1.0f, 0.0f, 1.0f, 1.0f }; // 最后一个数值,1是位置,0是方向
+			gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, ambientPos, 0);
 
-		float[] d = new float[4];
-		d[0] = (float) (color[0]*diffuse);
-		d[1] = (float) (color[1]*diffuse);
-		d[2] = (float) (color[2]*diffuse);
-		//d[0] = d[1] = d[2] = diffuse;
-		d[3] = 1.0f;
-		gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_DIFFUSE, d, 0);
-		float[] diffusePos = new float[] { 1.0f, 5.0f, 5.0f, 0.0f }; // 方向性
-		diffusePos[0] = myTerrain.getSunlight()[0];
-		diffusePos[1] = myTerrain.getSunlight()[1];
-		diffusePos[2] = myTerrain.getSunlight()[2];
+			float[] d = new float[4];
+			d[0] = (float) (color[0] * diffuse);
+			d[1] = (float) (color[1] * diffuse);
+			d[2] = (float) (color[2] * diffuse);
+			// d[0] = d[1] = d[2] = diffuse;
+			d[3] = 1.0f;
+			gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_DIFFUSE, d, 0);
+			float[] diffusePos = new float[] { 1.0f, 5.0f, 5.0f, 0.0f }; // 方向性
+			diffusePos[0] = myTerrain.getSunlight()[0];
+			diffusePos[1] = myTerrain.getSunlight()[1];
+			diffusePos[2] = myTerrain.getSunlight()[2];
 
-		gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, diffusePos, 0);
+			gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, diffusePos, 0);
+
+		} else {
+			float[] a = new float[4];
+			a[0] = a[1] = a[2] = ambient;
+			a[3] = 1.0f;
+			gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, a, 0); // a是亮度,位置和LIGHT0绑在一起了
+			float[] ambientPos = new float[] { 1.0f, 0.0f, 1.0f, 1.0f }; // 最后一个数值,1是位置,0是方向
+			gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, ambientPos, 0);
+
+			float[] d = new float[4];
+			d[0] = d[1] = d[2] = diffuse;
+			d[3] = 1.0f;
+			gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_DIFFUSE, d, 0);
+			float[] diffusePos = new float[] { 1.0f, 5.0f, 5.0f, 0.0f }; // 方向性
+			diffusePos[0] = myTerrain.getSunlight()[0];
+			diffusePos[1] = myTerrain.getSunlight()[1];
+			diffusePos[2] = myTerrain.getSunlight()[2];
+			gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, diffusePos, 0);
+
+		}
 		gl.glPopMatrix();
 	}
 
@@ -228,7 +275,7 @@ public class Camera implements GLEventListener {
 		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL.GL_ONE);
 		// 启用颜色混合
 		gl.glEnable(GL2.GL_COLOR_MATERIAL);
-		// gl.glColorMaterial( gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT_AND_DIFFUSE
+		 gl.glColorMaterial( gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT_AND_DIFFUSE);
 		// );
 		// 启用阴影平滑 /启用高斯模糊
 		gl.glShadeModel(GL2.GL_SMOOTH);
@@ -284,7 +331,6 @@ public class Camera implements GLEventListener {
 		// 设置视口的大小
 		// glu.gluOrtho2D(1.0, 1.0, 1.0, 1.0);这个是平行的，么有透视
 		glu.gluPerspective(45.0f, h, 1.0, 50.0); // --眼睛睁开的角度 ，比例，近，远
-		// TODO 如何知道1.0在世界坐标占的大小的？要多少才会超出框呢？
 		// 启用模型观察矩阵；模型观察矩阵中存放了我们的物体讯息。
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glLoadIdentity();
@@ -294,7 +340,7 @@ public class Camera implements GLEventListener {
 		if (debug) {
 			System.out.println("keyboard: Rotata Right");
 		}
-		yrotate += 10;
+		worldRotate += 10;
 
 	}
 
@@ -302,26 +348,16 @@ public class Camera implements GLEventListener {
 		if (debug) {
 			System.out.println("keyboard: Rotate LEft");
 		}
-		yrotate += -10;
+		worldRotate += -10;
+	}
+
+	public void flip() {
+
 		if (flipped == true) {
 			flipped = false;
 		} else {
 			flipped = true;
 		}
-	}
-
-	public void stepLeft() {
-		if (debug) {
-			System.out.println("keyboard: Step Left");
-		}
-		xtrans += -0.1;
-	}
-
-	public void stepRight() {
-		if (debug) {
-			System.out.println("keyboard: Step Right");
-		}
-		xtrans += 0.1;
 	}
 
 	/**
@@ -333,7 +369,7 @@ public class Camera implements GLEventListener {
 		if (debug) {
 			System.out.println("keyboard: Step Forward");
 		}
-		ztrans += 0.1;
+		ztrans += 0.5;
 
 	}
 
@@ -341,7 +377,7 @@ public class Camera implements GLEventListener {
 		if (debug) {
 			System.out.println("keyboard: Step Backward");
 		}
-		ztrans += -0.1;
+		ztrans += -0.5;
 	}
 
 	public void ambientUp() {
@@ -370,12 +406,8 @@ public class Camera implements GLEventListener {
 
 	@Override
 	public void dispose(GLAutoDrawable arg0) {
-		// TODO Auto-generated method stub
 
 	}
-
-	public double avatarAngle = 0.0;
-	public double angleStep = 10.0;
 
 	public void avatarStepForward() {
 		myTerrain.getAvatar().stepForawrd(avatarAngle);

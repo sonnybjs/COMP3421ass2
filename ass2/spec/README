@@ -1,0 +1,52 @@
+/******************************************************************************
+	This assignment is developed by Shuwen Zhou, z3315197
+	For COMP3421, UNSW
+	this file is modified @ 19:48, 18/10/2013
+ *****************************************************************************
+	To control:
+	There is two toggle button on the right top corner, you may switch it on/off
+	to review.
+	
+	The first button is "Original Sun light", If it's on, that will show the sun 
+	from input file's location.
+	In default, the sun is moving and color is changing regarding to the time 
+	of the day.(by the extension -- Add an avatar and make the camera follow 
+	behind the avatar in a 3rd person view (2 marks))
+	The second button is "World Camera", which will show the world by another 
+	angle that can review the world by controlling keyboard with moving the 
+	avatar.
+	In default, the camera is behind the avatar and always toward avatar's 
+	facing direction.(by the extension -- Make the sun move and change colour 
+	according to the time of day (2 marks))
+	Also, by the extension -- "Fix road extrusion so roads can go up and down 
+	hills (4 marks)" is done as well.
+	
+	
+	In default mode, Avatar movement:
+	W -- move forward
+	S -- move backward
+	A -- turn left
+	D -- turn right
+	
+	In "World Camera" mode, Camera movement:
+	UP 		-- Move camera forward
+	DOWN 	-- Move camera backward
+	LEFT 	-- Move camera CCW rotate around the midpoint of terrain
+	RIGHT	-- Move camera CW rotate around the midpoint of terrain
+	You may still have control of the avatar in World Camera mode.
+
+	Other Control:
+	Z --  up ambient light
+	X --  dim ambient light
+	C --  up specular light
+	V --  dim specular light
+	P --  flip the world to see what's down under
+
+
+
+
+
+
+
+
+******************************************************************************/

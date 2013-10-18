@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
 
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureCoords;
@@ -19,7 +20,7 @@ public class Road {
 
 	private List<Double> myPoints;
 	private double myWidth;
-	public final boolean debug = true;
+	public final boolean debug = Game.debug;
 	private Terrain myTerrain;
 
 	public double altitude(double x, double z) {
@@ -37,7 +38,7 @@ public class Road {
 		// 6 该vector+ (x,y,z)既得路沿的坐标
 
 		// 7 重复计算直到算出t=0.9的切线向量,取t=0.9~1的切线,最后t=1.0的切线等于t=0.9的切线
-		double[] scaleRotateTangent = new double[4];
+		
 		gl.glColor3d(110 / 255d, 110 / 255d, 110 / 255d);
 
 		float textureTop, textureBottom, textureLeft, textureRight;
@@ -56,7 +57,7 @@ public class Road {
 		// texture.getTextureObject());
 
 		double offset = 0.001;
-		double roadSegment = 0.05;
+		double roadSegment = 0.01;
 		for (double t = 0.0; t <= 0.9; t += roadSegment) { // t=0.0和t=1.0的点很奇怪
 			double[] point0 = point(t);
 			double x0 = point0[0]; // 点B
@@ -78,14 +79,28 @@ public class Road {
 				System.out.println(" Tangent is " + tangent[0] + " "
 						+ tangent[1] + " " + tangent[2] + " ");
 			}
-
+			double[] scaleRotateTangent = new double[4];
+			
+			//实际上是tangent 叉乘 该路面的normal 就等于新的横向tangent,然后在normalise一下
+			double[] pointA = {Math.floor(x0),myTerrain.altitude(Math.floor(x0), Math.floor(z0)),Math.floor(z0)};
+			double[] pointB = {Math.floor(x0),myTerrain.altitude(Math.floor(x0), Math.ceil(z0)),Math.ceil(z0)};
+			double[] pointC = {Math.ceil(x0),myTerrain.altitude(Math.ceil(x0), Math.ceil(z0)),Math.ceil(z0)};
+			double[] planeNormal = MathUtil.normal(pointA, pointB, pointC);
+			double[] rotateTangent = MathUtil.crossProduct(planeNormal, tangent);
+			/*
 			double[] rotateTangent = MathUtil.multiply(
 					MathUtil.rotationMatrix(90, false, true, false), tangent);
+			double[] a = 
+			double[] normal = MathUtil.normal(a, b, c); //这里需要面的三个点
+			double[] rotateTangent = MathUtil.multiply(p, q)
+			*/
 			double[] normalisedVector = MathUtil.normaliseVector(rotateTangent);
 			double[] nv4cal = {normalisedVector[0],normalisedVector[1],normalisedVector[2],1};
 			scaleRotateTangent = MathUtil.multiply(
 					MathUtil.scaleMatrix(myWidth / 2),
 					nv4cal);
+			
+			
 			double[] rightbottom = { scaleRotateTangent[0] + midpoint[0],
 					scaleRotateTangent[1] + midpoint[1],
 					scaleRotateTangent[2] + midpoint[2] };
@@ -98,7 +113,7 @@ public class Road {
 					scaleRotateTangent[1] + y1, scaleRotateTangent[2] + z1 };
 			double[] normal = MathUtil
 					.normal(leftbottom, rightbottom, righttop);
-			gl.glBegin(gl.GL_QUADS);
+			gl.glBegin(GL2GL3.GL_QUADS);
 			gl.glNormal3d(-normal[0], -normal[1], -normal[2]);
 			gl.glTexCoord2f(textureLeft, textureBottom);
 			gl.glVertex3d(rightbottom[0], rightbottom[1], rightbottom[2]);// --

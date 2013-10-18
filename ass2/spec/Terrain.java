@@ -25,7 +25,7 @@ public class Terrain {
     private List<Tree> myTrees;
     private List<Road> myRoads;
     private float[] mySunlight;
-    final public boolean debug = true;
+    final public boolean debug = Game.debug;
     boolean drawTriangle = false;
     
     /**
@@ -71,6 +71,8 @@ public class Terrain {
     	         */  
     	       // gl.glBindTexture(GL2.GL_TEXTURE_2D, texture);  
 	    	        if(!drawTriangle){
+	    	        float[] difColor = {1.0f, 1.5f, 1.0f, 1};
+	    	        gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT_AND_DIFFUSE, difColor, 0);
 	    			gl.glBegin(GL2.GL_QUADS);
 	    			double[] a = {i,this.getGridAltitude(i, y),y};
 	    			double[] b = {i,this.getGridAltitude(i, y+1),y+1};

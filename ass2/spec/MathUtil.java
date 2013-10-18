@@ -3,13 +3,14 @@ package ass2.spec;
 /**
  * A collection of useful math methods
  * 
- * TODO: The methods you need to complete are at the bottom of the class
+ * The methods you need to complete are at the bottom of the class
  * 
  * @author malcolmr
+ * @modified by Shuwen Zhou
  */
 public class MathUtil {
 
-	final public static boolean debug = true;
+	final public static boolean debug = Game.debug;
 
 	/**
 	 * Normalise an angle to the range (-180, 180]
@@ -92,7 +93,7 @@ public class MathUtil {
 	// ===========================================
 
 	/**
-	 * TODO: A 2D translation matrix for the given offset vector
+	 * A 2D translation matrix for the given offset vector
 	 * 
 	 * @param pos
 	 * @return
@@ -117,7 +118,7 @@ public class MathUtil {
 	}
 
 	/**
-	 * TODO: A 2D rotation matrix for the given angle
+	 *  2D rotation matrix for the given angle
 	 * 
 	 * @param angle
 	 * @return
@@ -194,7 +195,7 @@ public class MathUtil {
 	}
 
 	/**
-	 * TODO: A 2D scale matrix that scales both axes by the same factor
+	 *  A 2D scale matrix that scales both axes by the same factor
 	 * 
 	 * @param scale
 	 * @return
@@ -226,7 +227,24 @@ public class MathUtil {
 		}
 		return result;
 	}
-
+	/**
+	 * 
+	 * @param v1 3d double
+	 * @param v2 3d double
+	 * @return 3d double
+	 */
+	public static double[] crossProduct(double[] v1, double[] v2){
+		double[] r = { v1[1] * v2[2] - v1[2] * v2[1],
+				v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0] };
+		return r;
+	}
+	/**
+	 * 
+	 * @param a a point, 3d double
+	 * @param b
+	 * @param c
+	 * @return 3d double
+	 */
 	public static double[] normal(double[] a, double[] b, double[] c) {
 		double[] n = new double[3];
 		// 点1-点2得向量1
@@ -234,15 +252,16 @@ public class MathUtil {
 		// 点1-点3得向量2
 		double[] v2 = { a[0] - c[0], a[1] - c[1], a[2] - c[2]};
 		// 向量1和向量2 叉乘 得法线向量的方向
-		double[] roughN = { v1[1] * v2[2] - v1[2] * v2[1],
-				v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0] };
+		//double[] roughN = { v1[1] * v2[2] - v1[2] * v2[1],
+		//		v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0] };
+		n = MathUtil.crossProduct(v1,v2);
 		//a * b = [a2b3 -a3b2, a3b1 -a1b3, a1b2- a2b1]
-		n = roughN;
+		//n = roughN;
 		
 		if(debug){
 			System.out.println("normal: v1 is "+ v1[0]+" "+v1[1]+" "+v1[2]);
 			System.out.println("v2 is "+ v2[0]+" "+v2[1]+" "+v2[2]);
-			System.out.println("roughN is "+ roughN[0]+" "+roughN[1]+" "+roughN[2]);
+			//System.out.println("roughN is "+ roughN[0]+" "+roughN[1]+" "+roughN[2]);
 		}
 		return n;
 	}
