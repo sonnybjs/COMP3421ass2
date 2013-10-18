@@ -19,6 +19,7 @@ import com.jogamp.opengl.util.FPSAnimator;
  * 
  * @author malcolmr
  */
+@SuppressWarnings("serial")
 public class Game extends JFrame {
 
 	private Terrain myTerrain;
@@ -40,8 +41,6 @@ public class Game extends JFrame {
 	 * 
 	 */
 	public void run() {
-		// setup camera
-		// build a mesh
 		label = new JLabel();
 		label2 = new JLabel();
 		label.setForeground(new java.awt.Color(204, 204, 255));
@@ -56,7 +55,6 @@ public class Game extends JFrame {
 		panel.addKeyListener(new Keyboard(camera));
 		panel.setFocusable(true);
 		panel.requestFocus();
-		// panel.add(label);
 		sunButton = new javax.swing.JToggleButton();
 		CameraButton = new javax.swing.JToggleButton();
 		sunButton.setText("Original Sun light");
@@ -181,7 +179,10 @@ public class Game extends JFrame {
 	 * @throws FileNotFoundException
 	 */
 	public static void main(String[] args) throws FileNotFoundException {
-		Terrain terrain = LevelIO.load(new File(args[0]));
+		
+		//Terrain terrain = LevelIO.load(new File(args[0]));
+		Terrain terrain = LevelIO.load(new File("input1"));
+		
 		System.out.println(args[0]);
 		Game game = new Game(terrain);
 		game.run();

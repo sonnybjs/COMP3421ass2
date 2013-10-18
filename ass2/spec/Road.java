@@ -3,7 +3,6 @@ package ass2.spec;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GL2GL3;
 
@@ -47,18 +46,12 @@ public class Road {
 		textureBottom = textureCoords.bottom();
 		textureLeft = textureCoords.left();
 		textureRight = textureCoords.right();
-
-		// Enables this texture's target in the current GL context's state.
-		texture.enable(gl); // same as gl.glEnable(texture.getTarget());
-		// gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE,
-		// GL.GL_REPLACE);
-		// Binds this texture to the current GL context.
-		texture.bind(gl); // same as gl.glBindTexture(texture.getTarget(),
-		// texture.getTextureObject());
+		texture.enable(gl); 
+		texture.bind(gl);
 
 		double offset = 0.001;
 		double roadSegment = 0.01;
-		for (double t = 0.0; t <= 0.9; t += roadSegment) { // t=0.0和t=1.0的点很奇怪
+		for (double t = 0.0; t <= 0.9; t += roadSegment) {
 			double[] point0 = point(t);
 			double x0 = point0[0]; // 点B
 			double z0 = point0[1];
@@ -87,13 +80,6 @@ public class Road {
 			double[] pointC = {Math.ceil(x0),myTerrain.altitude(Math.ceil(x0), Math.ceil(z0)),Math.ceil(z0)};
 			double[] planeNormal = MathUtil.normal(pointA, pointB, pointC);
 			double[] rotateTangent = MathUtil.crossProduct(planeNormal, tangent);
-			/*
-			double[] rotateTangent = MathUtil.multiply(
-					MathUtil.rotationMatrix(90, false, true, false), tangent);
-			double[] a = 
-			double[] normal = MathUtil.normal(a, b, c); //这里需要面的三个点
-			double[] rotateTangent = MathUtil.multiply(p, q)
-			*/
 			double[] normalisedVector = MathUtil.normaliseVector(rotateTangent);
 			double[] nv4cal = {normalisedVector[0],normalisedVector[1],normalisedVector[2],1};
 			scaleRotateTangent = MathUtil.multiply(
@@ -125,12 +111,8 @@ public class Road {
 			gl.glVertex3d(leftbottom[0], leftbottom[1], leftbottom[2]);// --
 			gl.glEnd();
 			if (debug) {
-				// System.out.println("In Road: +side "+ result0[0]+" "+
-				// result0[1]+" "+ result0[2]+" ");
 				System.out.println("In Road: normal " + normal[0] + " "
 						+ normal[1] + " " + normal[2] + " ");
-				// System.out.println("In Road: -side "+ result1[0]+" "+
-				// result1[1]+" "+ result1[2]+" ");
 			}
 		}
 
@@ -222,25 +204,6 @@ public class Road {
 	 * @return
 	 */
 	public double[] point(double t) {
-		/*
-		 * int i = (int)Math.floor(t); t = t - i;
-		 * 
-		 * i *= 6;
-		 * 
-		 * double x0 = myPoints.get(i++); double y0 = myPoints.get(i++); double
-		 * x1 = myPoints.get(i++); double y1 = myPoints.get(i++); double x2 =
-		 * myPoints.get(i++); double y2 = myPoints.get(i++); double x3 =
-		 * myPoints.get(i++); double y3 = myPoints.get(i++);
-		 * 
-		 * double[] p = new double[2];
-		 * 
-		 * p[0] = b(0, t) * x0 + b(1, t) * x1 + b(2, t) * x2 + b(3, t) * x3;
-		 * p[1] = b(0, t) * y0 + b(1, t) * y1 + b(2, t) * y2 + b(3, t) * y3;
-		 * if(debug){ System.out.println("--------------------------p is "+
-		 * p[0]+" "+p[1]);
-		 * 
-		 * } return p;
-		 */
 		return perfectBezier(t);
 	}
 
@@ -248,8 +211,7 @@ public class Road {
 		double[] p = new double[2];
 
 		int l = myPoints.size() / 2 - 1;
-		for (int k = 0; k < myPoints.size() / 2; k++) { // 注意mypoint是两个一组,k是指当前项的序数
-			// k=0,1,2,3时. point有8个0~7
+		for (int k = 0; k < myPoints.size() / 2; k++) { 
 			p[0] += bernstein(l, k, t) * myPoints.get(2 * k); // x=0,2,4,6
 
 			p[1] += bernstein(l, k, t) * myPoints.get(2 * k + 1); // y=1,3,5,7

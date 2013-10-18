@@ -10,6 +10,7 @@ import com.jogamp.opengl.util.texture.Texture;
  * COMMENT: Comment Tree
  * 
  * @author malcolmr
+ * @modified by sephy
  */
 public class Tree {
 	final public boolean debug = Game.debug;
@@ -27,20 +28,10 @@ public class Tree {
 		}
 		gl.glPushMatrix();
 		gl.glTranslated(getPosition()[0], getPosition()[1], getPosition()[2]);
-		gl.glRotatef(-90, 1.0f, 0.0f, 0.0f); // angle,x,y,z 由于glucylinder是在z轴上画的
-		/**
-		 * 纹理的用法 gl.glColor3f(1.0f, 1.0f, 1.0f); //白色
-		 * gl.glEnable(GL.GL_TEXTURE_2D); //使用纹理
-		 * gl.glBindTexture(GL.GL_TEXTURE_2D, textureArr[1]);//
-		 */
+		gl.glRotatef(-90, 1.0f, 0.0f, 0.0f); 
 		gl.glColor3f(102 / 255f, 51 / 255f, 0.0f); 
-		// Enables this texture's target in the current GL context's state.
-		treeTexture.enable(gl); // same as gl.glEnable(texture.getTarget());
-		// gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE,
-		// GL.GL_REPLACE);
-		// Binds this texture to the current GL context.
-		treeTexture.bind(gl); // same as gl.glBindTexture(texture.getTarget(),
-		// texture.getTextureObject());
+		treeTexture.enable(gl); 
+		treeTexture.bind(gl);
 
 		GLUquadric cylinder = glu.gluNewQuadric();
 		glu.gluQuadricTexture(cylinder, true);
@@ -63,9 +54,8 @@ public class Tree {
 		gl.glRotatef(90, 1.0f, 0.0f, 0.0f);
 		gl.glTranslated(0.0f, treeRadius + treeHeight, 0.0f);
 		glu.gluQuadricTexture(cylinder, false);
-		// 球体,位置在radius+height的地方(中心位置)
 		gl.glColor3f(51 / 255f, 102 / 255f, 0.0f);
-		glu.gluSphere(cylinder, 0.4, 25, 25); // ？？没有NORMAL？没有texture？？
+		glu.gluSphere(cylinder, 0.4, 25, 25);
 		gl.glPopMatrix();
 	}
 

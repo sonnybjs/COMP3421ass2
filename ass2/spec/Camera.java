@@ -12,6 +12,7 @@ import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLException;
+import javax.media.opengl.fixedfunc.GLLightingFunc;
 import javax.media.opengl.glu.GLU;
 import javax.swing.JLabel;
 
@@ -36,7 +37,10 @@ public class Camera implements GLEventListener {
 	public double avatarAngle = 0.0;
 	public double angleStep = 10.0;
 	private double worldRotate = 0.0;
-
+	public double time = 0; // 0~24, 25frame per hour in world
+	public double[] lightDirAt8 = { -1, 0, 0, 1 };
+	double[] color = { 1.0, 1.0, 1.0 };
+	
 	public Camera(Terrain theTerrain) {
 		myTerrain = theTerrain;
 	}
@@ -47,8 +51,6 @@ public class Camera implements GLEventListener {
 		if (debug) {
 			System.out.println("display method working");
 		}
-		// clear both the colour buffer and the depth buffer
-		// 设置背景为天蓝色
 		gl.glClearColor(0.0f, 245 / 255f, 1.0f, 0.5f);
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
@@ -76,14 +78,22 @@ public class Camera implements GLEventListener {
 		} else { // For World Camera
 			double[] worldMidPoint = {
 					myTerrain.size().getWidth() / 2,
-					myTerrain.altitude(myTerrain.size().getWidth()-1, myTerrain
-							.size().getHeight()-1) / 2,
+					myTerrain.altitude(myTerrain.size().getWidth() - 1,
+							myTerrain.size().getHeight() - 1) / 2,
 					myTerrain.size().getHeight() / 2 };
 			double eyex = worldMidPoint[0]
-					+ Math.sin(worldRotate * Math.PI / 180)*(cameraAvatarDistance+ztrans);
-			double eyey = worldMidPoint[0] ;
+					+ Math.sin(worldRotate * Math.PI / 180)
+					* (cameraAvatarDistance + ztrans);
+			double eyey = worldMidPoint[0];
 			double eyez = worldMidPoint[2]
-					- Math.cos(worldRotate * Math.PI / 180)*(cameraAvatarDistance+ztrans);
+					- Math.cos(worldRotate * Math.PI / 180)
+					* (cameraAvatarDistance + ztrans);
+			if(eyex < myTerrain.size().getWidth()-1 && eyex>=0 && eyez>=0 &&
+			eyez < myTerrain.size().getHeight()-1 && 	
+					myTerrain.altitude(eyex, eyez) >= eyey){
+				eyey += 5;
+			}
+			
 			if (!flipped) {
 				glu.gluLookAt(eyex, eyey, eyez, worldMidPoint[0],
 						worldMidPoint[1], worldMidPoint[2], 0, 1, 0);
@@ -98,8 +108,6 @@ public class Camera implements GLEventListener {
 		if (lightEnable) {
 			setLighting(gl);
 		}
-
-		// 现在GL在地图应在位置
 		drawShape(gl);
 		myLabel.setText("<HTML>Avatar Position<P>X:" + myTerrain.getAvatar().x
 				+ "<P>Y:" + myTerrain.getAvatar().y + "<P>Z:"
@@ -112,20 +120,7 @@ public class Camera implements GLEventListener {
 				* 255 + " " + color[2] * 255 + "</HTML>");
 	}
 
-	// public double sunRotate = 0.0;
-	public double time = 0; // 0~24, 25frame per hour in world
-	// time=14时，sunrotate=0
-	public double[] lightDirAt8 = { -1, 0, 0, 1 };
-	double[] color = { 1.0, 1.0, 1.0 };
 
-	@SuppressWarnings("unused")
-	private double[] getLightDirection() {
-		double angle = (time - 8) / 24 * 360.0;
-		double[] lightDir = MathUtil
-				.multiply(MathUtil.rotationMatrix(angle, false, false, true),
-						lightDirAt8);
-		return lightDir;
-	}
 
 	private void setLighting(GL2 gl) {
 		gl.glShadeModel(GL2.GL_SMOOTH);
@@ -136,7 +131,7 @@ public class Camera implements GLEventListener {
 				time = 0;
 			}
 			double sunRotate = time * 15;
-			gl.glRotated(sunRotate, 0.0, 0.0, 1.0); // 用于太阳的旋转,working now
+			gl.glRotated(sunRotate, 0.0, 0.0, 1.0); 
 			if (debug) {
 				System.out.println("LIghting lumi:ambient " + ambient
 						+ " diffuse " + diffuse);
@@ -166,8 +161,8 @@ public class Camera implements GLEventListener {
 			a[2] = (float) (color[2] * ambient);
 			// a[0] = a[1] = a[2] = ambient;
 			a[3] = 1.0f;
-			gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, a, 0); // a是亮度,位置和LIGHT0绑在一起了
-			float[] ambientPos = new float[] { 1.0f, 0.0f, 1.0f, 1.0f }; // 最后一个数值,1是位置,0是方向
+			gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, a, 0);
+			float[] ambientPos = new float[] { 1.0f, 0.0f, 1.0f, 1.0f }; // position
 			gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, ambientPos, 0);
 
 			float[] d = new float[4];
@@ -177,19 +172,21 @@ public class Camera implements GLEventListener {
 			// d[0] = d[1] = d[2] = diffuse;
 			d[3] = 1.0f;
 			gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_DIFFUSE, d, 0);
-			float[] diffusePos = new float[] { 1.0f, 5.0f, 5.0f, 0.0f }; // 方向性
+			float[] diffusePos = new float[] { 1.0f, 5.0f, 5.0f, 0.0f }; // direction
 			diffusePos[0] = myTerrain.getSunlight()[0];
 			diffusePos[1] = myTerrain.getSunlight()[1];
 			diffusePos[2] = myTerrain.getSunlight()[2];
 
 			gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, diffusePos, 0);
+			// gl.glLightf(GL2.GL_LIGHT1, GL2.GL_QUADRATIC_ATTENUATION , (float)
+			// 0.5);
 
 		} else {
 			float[] a = new float[4];
 			a[0] = a[1] = a[2] = ambient;
 			a[3] = 1.0f;
-			gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, a, 0); // a是亮度,位置和LIGHT0绑在一起了
-			float[] ambientPos = new float[] { 1.0f, 0.0f, 1.0f, 1.0f }; // 最后一个数值,1是位置,0是方向
+			gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, a, 0);
+			float[] ambientPos = new float[] { 1.0f, 0.0f, 1.0f, 1.0f };
 			gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, ambientPos, 0);
 
 			float[] d = new float[4];
@@ -206,9 +203,7 @@ public class Camera implements GLEventListener {
 		gl.glPopMatrix();
 	}
 
-	// 真正的画图的方法。由于terrian内部含有tree之类的方法，所以只要载入terrian就好了
 	private void drawShape(GL2 gl) {
-		// myTerrain.triangleTest(gl);
 		drawCoor(gl);
 		myTerrain.draw(gl, groundTexture, treeTexture, roadTexture);
 
@@ -235,25 +230,14 @@ public class Camera implements GLEventListener {
 	Texture roadTexture;
 
 	private void setTexture(GL2 gl) {
-		// Load texture from image
 		try {
-			// Create a OpenGL Texture object from (URL, mipmap, file suffix)
-			// Use URL so that can read from JAR and disk file.
 			groundTexture = TextureIO.newTexture(getClass().getClassLoader()
-					.getResource("ground.jpg"), // relative to project root
-					false, ".jpg");
+					.getResource("ground.jpg"), false, ".jpg");
 			treeTexture = TextureIO.newTexture(getClass().getClassLoader()
-					.getResource("tree.jpg"), // relative to project root
-					false, ".jpg");
+					.getResource("tree.jpg"), false, ".jpg");
 			roadTexture = TextureIO.newTexture(getClass().getClassLoader()
-					.getResource("road.jpg"), // relative to project root
-					false, ".jpg");
-
-			// Use linear filter for texture if image is larger than the
-			// original texture
+					.getResource("road.jpg"), false, ".jpg");
 			gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			// Use linear filter for texture if image is smaller than the
-			// original texture
 			gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		} catch (GLException e) {
 			e.printStackTrace();
@@ -263,41 +247,27 @@ public class Camera implements GLEventListener {
 	}
 
 	@Override
-	public void init(GLAutoDrawable arg0) { // 获取GL对象
+	public void init(GLAutoDrawable arg0) {
 		GL2 gl = arg0.getGL().getGL2();
 		gl.glLoadIdentity();
 		if (lightEnable) {
 
 		}
-		// 启用纹理映射
 		gl.glEnable(GL2.GL_TEXTURE_2D);
-		// 设置混合
 		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL.GL_ONE);
-		// 启用颜色混合
 		gl.glEnable(GL2.GL_COLOR_MATERIAL);
-		 gl.glColorMaterial( gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT_AND_DIFFUSE);
-		// );
-		// 启用阴影平滑 /启用高斯模糊
+		gl.glColorMaterial(GL.GL_FRONT_AND_BACK,
+				GLLightingFunc.GL_AMBIENT_AND_DIFFUSE);
 		gl.glShadeModel(GL2.GL_SMOOTH);
-		// 设置背景颜色为黑色
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
-		// 设置深度缓存
 		gl.glClearDepth(1.0f);
-		// 启用深度测试
 		gl.glEnable(GL.GL_DEPTH_TEST);
-		// 所作的深度测试的类型
 		gl.glDepthFunc(GL.GL_LEQUAL);
-		// 告诉系统对透视进行修正
 		gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);
 
-		// Really Nice Perspective Calculations
 		setTexture(gl);
 
 	}
-
-	/**
-	 * 窗口变换大小
-	 */
 	public void reshape(GLAutoDrawable glDrawable, int x, int y, int width,
 			int height) {
 		final GLU glu = new GLU();
@@ -307,10 +277,8 @@ public class Camera implements GLEventListener {
 
 		final GL2 gl = glDrawable.getGL().getGL2();
 
-		// enable depth testing
 		gl.glEnable(GL.GL_DEPTH_TEST);
 		if (lightEnable) {
-			// enable lighting, turn on light 0
 			gl.glEnable(GL2.GL_LIGHTING);
 			gl.glEnable(GL2.GL_LIGHT0);
 			gl.glEnable(GL2.GL_LIGHT1);
@@ -318,25 +286,18 @@ public class Camera implements GLEventListener {
 			// this is necessary to make lighting work properly
 			gl.glEnable(GL2.GL_NORMALIZE);
 		}
-		// 防止被零除
-		if (height <= 0) // avoid a divide by zero error!
+		if (height <= 0)
 			height = 1;
 		final float h = (float) width / (float) height;
-		// 设置视窗的大小
 		gl.glViewport(0, 0, width, height);
-		// 选择投影矩阵 ,投影矩阵负责为我们的场景增加透视。
 		gl.glMatrixMode(GL2.GL_PROJECTION);
-		// 重置投影矩阵;
 		gl.glLoadIdentity();
-		// 设置视口的大小
-		// glu.gluOrtho2D(1.0, 1.0, 1.0, 1.0);这个是平行的，么有透视
-		glu.gluPerspective(45.0f, h, 1.0, 50.0); // --眼睛睁开的角度 ，比例，近，远
-		// 启用模型观察矩阵；模型观察矩阵中存放了我们的物体讯息。
+		glu.gluPerspective(45.0f, h, 1.0, 50.0);
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glLoadIdentity();
 	}
 
-	public void rotateRight() {
+	public void rotateLeft() {
 		if (debug) {
 			System.out.println("keyboard: Rotata Right");
 		}
@@ -344,7 +305,7 @@ public class Camera implements GLEventListener {
 
 	}
 
-	public void rotateLeft() {
+	public void rotateRight() {
 		if (debug) {
 			System.out.println("keyboard: Rotate LEft");
 		}
@@ -363,9 +324,9 @@ public class Camera implements GLEventListener {
 	/**
 	 * The camera should move up and down following the terrain. So if you move
 	 * it forward up a hill, the camera should move up the hill.
-	 * 镜头要随着山坡移动(永远在山坡上方一定距离,如果距离山坡小于某个距离,则自动上抬)
+	 * 
 	 */
-	public void stepForward() {
+	public void stepBackward() {
 		if (debug) {
 			System.out.println("keyboard: Step Forward");
 		}
@@ -373,7 +334,7 @@ public class Camera implements GLEventListener {
 
 	}
 
-	public void stepBackward() {
+	public void stepForward() {
 		if (debug) {
 			System.out.println("keyboard: Step Backward");
 		}

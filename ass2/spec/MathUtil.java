@@ -1,9 +1,7 @@
 package ass2.spec;
 
 /**
- * A collection of useful math methods
- * 
- * The methods you need to complete are at the bottom of the class
+ * Now this class is working for 3D transformation 
  * 
  * @author malcolmr
  * @modified by Shuwen Zhou
@@ -76,12 +74,7 @@ public class MathUtil {
 		for (int i = 0; i < 4; i++) {
 			u[i] = 0;
 			for (int j = 0; j < 4; j++) {
-				// System.out.println("FLAG:"+m[i][j]);
-				// System.out.println(" "+v[j]);
-
 				u[i] += m[i][j] * v[j];
-				// System.out.println("FLAG!!:"+i+" "+j);
-				// System.out.println("FLAG:"+m[i][j]+" "+v[j]);
 			}
 		}
 
@@ -186,11 +179,6 @@ public class MathUtil {
 			// this shouldn't happen
 		}
 
-		/*
-		 * System.out.print(Math.cos(90)+"|||"); for(int i = 0; i<3 ; i++){
-		 * for(int j = 0 ; j<3 ; j++){ System.out.print(r[i][j]+" "); }
-		 * System.out.println(); } System.out.println("---------------");
-		 */
 		return r;
 	}
 
@@ -247,22 +235,14 @@ public class MathUtil {
 	 */
 	public static double[] normal(double[] a, double[] b, double[] c) {
 		double[] n = new double[3];
-		// 点1-点2得向量1
 		double[] v1 = { a[0] - b[0], a[1] - b[1], a[2] - b[2] };
-		// 点1-点3得向量2
 		double[] v2 = { a[0] - c[0], a[1] - c[1], a[2] - c[2]};
-		// 向量1和向量2 叉乘 得法线向量的方向
-		//double[] roughN = { v1[1] * v2[2] - v1[2] * v2[1],
-		//		v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0] };
 		n = MathUtil.crossProduct(v1,v2);
-		//a * b = [a2b3 -a3b2, a3b1 -a1b3, a1b2- a2b1]
-		//n = roughN;
 		
 		if(debug){
 			System.out.println("normal: v1 is "+ v1[0]+" "+v1[1]+" "+v1[2]);
 			System.out.println("v2 is "+ v2[0]+" "+v2[1]+" "+v2[2]);
-			//System.out.println("roughN is "+ roughN[0]+" "+roughN[1]+" "+roughN[2]);
-		}
+			}
 		return n;
 	}
 	

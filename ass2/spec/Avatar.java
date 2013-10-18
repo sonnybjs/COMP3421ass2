@@ -21,12 +21,10 @@ public class Avatar {
 	public void draw(GL2 gl){
 		gl.glPushMatrix();
 		y = getY();
-		//gl.glLoadIdentity();
 		gl.glTranslated(x, y, z);
-		gl.glRotatef(-90, 1.0f, 0.0f, 0.0f);  //angle,x,y,z 由于glucylinder是在z轴上画的
+		gl.glRotatef(-90, 1.0f, 0.0f, 0.0f); 
 		gl.glColor3f(1.0f, 1.0f, 1.0f);
 		GLUquadric obj = glu.gluNewQuadric();
-    	//glu.gluQuadricTexture(cylinder, true);
     	glu.gluQuadricNormals(obj, GLU.GLU_SMOOTH);
 		glu.gluCylinder(obj , radius, radius, height, 3, 10);
 		

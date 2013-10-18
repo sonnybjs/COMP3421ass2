@@ -31,8 +31,8 @@
 	In "World Camera" mode, Camera movement:
 	UP 		-- Move camera forward
 	DOWN 	-- Move camera backward
-	LEFT 	-- Move camera CCW rotate around the midpoint of terrain
-	RIGHT	-- Move camera CW rotate around the midpoint of terrain
+	LEFT 	-- Move camera CW rotate around the midpoint of terrain
+	RIGHT	-- Move camera CCW rotate around the midpoint of terrain
 	You may still have control of the avatar in World Camera mode.
 
 	Other Control:

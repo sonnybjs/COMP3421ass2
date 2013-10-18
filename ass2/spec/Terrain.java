@@ -33,15 +33,11 @@ public class Terrain {
      * @param gl
      */
     public void draw(GL2 gl, Texture groundTexture, Texture treeTexture, Texture roadTexture){
-    	//gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);  
-        //重置模型观察矩阵  
-    	
+    	   	
     	if(debug) {
 			System.out.println("HEIGHT is "+mySize.getHeight() +" width is "+ mySize.getWidth());
 		}
 		
-		
-    	//画地面
     	float textureTop, textureBottom, textureLeft, textureRight;
     	TextureCoords textureCoords = groundTexture.getImageTexCoords();
         textureTop = textureCoords.top();
@@ -49,29 +45,18 @@ public class Terrain {
         textureLeft = textureCoords.left();
         textureRight = textureCoords.right();
         
-        // Enables this texture's target in the current GL context's state.
-        groundTexture.enable(gl);  // same as gl.glEnable(texture.getTarget());
-        // gl.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_REPLACE);
-        // Binds this texture to the current GL context.
-        groundTexture.bind(gl);  // same as gl.glBindTexture(texture.getTarget(), texture.getTextureObject());
-    	
+        groundTexture.enable(gl);  
+        groundTexture.bind(gl);  
     	for(int i = 0; i< mySize.getHeight()-1 ; i++) { //loop from 1 to 9 
     		for(int y = 0; y< mySize.getWidth()-1; y++) {
     			if(debug) {
     				System.out.println("i:"+i+" y:"+y+" altitute:"+this.getGridAltitude(i, y));
     			}
-    			//方向必须是逆时针
+    			//CCW
     			gl.glColor3d(102/255d, 102/255d, 0.0);
-    			/** 
-    	         * 如果您在您的场景中使用多个纹理，您应该使用来 
-    	         *  glBindTexture(GL_TEXTURE_2D, texture[ 所使用纹理对应的数字 ]) 
-    	         * 选择要绑定的纹理。当您想改变纹理时，应该绑定新的纹理。 
-    	         * 有一点值得指出的是，您不能在 glBegin() 和 glEnd() 之间绑定纹理， 
-    	         * 必须在 glBegin() 之前或 glEnd() 之后绑定。 
-    	         */  
     	       // gl.glBindTexture(GL2.GL_TEXTURE_2D, texture);  
 	    	        if(!drawTriangle){
-	    	        float[] difColor = {1.0f, 1.5f, 1.0f, 1};
+	    	        float[] difColor = {102/255f, 1.0f, 51/255f, 1};
 	    	        gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT_AND_DIFFUSE, difColor, 0);
 	    			gl.glBegin(GL2.GL_QUADS);
 	    			double[] a = {i,this.getGridAltitude(i, y),y};
@@ -90,6 +75,15 @@ public class Terrain {
 	    			gl.glVertex3d(i+1,this.getGridAltitude(i+1,y),y);
 	    			gl.glEnd();
     	        } else {
+    	        	float[] difColor = {1.0f, 1.0f, 1.0f, 1};
+	    	        gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT_AND_DIFFUSE, difColor, 0);
+	    			
+    	        	double[] a = {i,this.getGridAltitude(i, y),y};
+	    			double[] b = {i,this.getGridAltitude(i, y+1),y+1};
+	    			double[] c = {i+1,this.getGridAltitude(i+1, y),y};
+	    			double[] n = MathUtil.normal(a, b, c);
+	    			
+	    			gl.glNormal3d(n[0], n[1], n[2]);
 	    			gl.glBegin(GL.GL_TRIANGLES);
 	    			gl.glTexCoord2f(textureLeft, textureBottom);//左下
 	    			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
@@ -110,9 +104,8 @@ public class Terrain {
     	        }
     			
     			if(!drawTriangle){
-	    			//这是网格线,polygonoffset好像不对?
 	    			gl.glColor3d(0.0, 0.0, 0.0);
-	    			//方向必须是逆时针
+	    			//CCW
 	    			gl.glBegin(GL.GL_LINE_LOOP);
 	    			gl.glVertex3d(i,this.getGridAltitude(i, y)+0.01,y);
 	    			gl.glVertex3d(i,this.getGridAltitude(i, y+1)+0.01,y+1);
@@ -138,8 +131,6 @@ public class Terrain {
     	}
     	drawAvatar(gl);
     	drawTrees(gl,treeTexture);
-    	//每个drawtree都有gl.glPopMatrix();所以现在回到了地图原点
-    	//gl.glPopMatrix();
     	drawRoad(gl, roadTexture);
     }
     
@@ -314,87 +305,5 @@ public class Terrain {
         Road road = new Road(width, spine,this);
         myRoads.add(road);        
     }
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-    public void triangleTest(GL2 gl){
-    	//所有的面都要按照逆时针绘制！！//清理屏幕和深度缓存  
-        //gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);  
-        //重置模型观察矩阵  
-        gl.glLoadIdentity();  
-        //将绘制中心左移1.5个单位，向屏幕里移入6个单位  
-        gl.glTranslatef(-1.0f, 0.0f, -6.0f);  
-        //设置旋转轴，以Y轴为旋转轴旋转rtri度  
-        gl.glRotatef(30, 45, 1.0f, 0.0f);  
-         /** 
-         * 下面的代码创建一个绕者其中心轴旋转的金字塔。 
-         * 金字塔的上顶点高出原点一个单位，底面中心低于原点一个单位。 
-         * 上顶点在底面的投影位于底面的中心. 
-         * 注意所有的面－三角形都是逆时针次序绘制的。 
-         * 这点十分重要，在以后的课程中我会作出解释。 
-         * 现在，您只需明白要么都逆时针，要么都顺时针， 
-         * 但永远不要将两种次序混在一起，除非您有足够的理由必须这么做。 
-         * 下面我们开始绘制金字塔的各个面 
-         */  
-        gl.glBegin(GL2.GL_TRIANGLES);           // Drawing Using Triangles  
-        /** 
-         * 开始绘制金字塔的的前侧面 
-         */  
-        //设置当前的颜色为红色，设置前侧面的上顶点  
-        gl.glColor3f(1.0f, 0.0f, 0.0f);           
-        gl.glVertex3f(0.0f, 1.0f, 0.0f);              
-       //设置当前的颜色为绿色，设置这个前侧面的左顶点  
-        gl.glVertex3f(-1.0f, -1.0f, 1.0f);  
-        //设置当前的颜色为蓝色,设置前侧面的右顶点    
-        gl.glVertex3f(1.0f, -1.0f, 1.0f);  
-          
-        /** 
-         * 绘制金字塔的右侧面 
-         * 设置渲染颜色为红色，当前的点为右侧面的上顶点 
-         */  
-        gl.glColor3f(0.0f, 1.0f, 0.0f);           
-        gl.glVertex3f(0.0f, 1.0f, 0.0f);  
-        //设置当前的颜色为蓝色，当前的点为右侧面的左顶点     
-        gl.glVertex3f(1.0f, -1.0f, 1.0f);  
-        //设置当前的颜色为绿色，当前的点位右侧面右顶点  
-        gl.glVertex3f(1.0f, -1.0f, -1.0f);  
-  
-        /** 
-         * 绘制金字塔的背面 
-         * 设置当前渲染颜色为红色，当前的点位背面的上顶点 
-         */  
-        gl.glColor3f(0.0f, 0.0f, 1.0f);           
-        gl.glVertex3f(0.0f, 1.0f, 0.0f);  
-         //设置当前的颜色为绿色，当前的点为背面的左顶点   
-        gl.glVertex3f(1.0f, -1.0f, -1.0f);  
-        //设置当前的颜色为蓝色，当前的点为背面的右顶点  
-        gl.glVertex3f(-1.0f, -1.0f, -1.0f);  
-  
-        /** 
-         * 绘制金字塔的左侧面 
-         * 设置颜色为红色，设置左侧面的上顶点 
-         */  
-        gl.glColor3f(1.0f, 1.0f, 0.0f);           
-        gl.glVertex3f(0.0f, 1.0f, 0.0f);  
-        //设置颜色为蓝色，设置左侧面的左顶点       
-        gl.glVertex3f(-1.0f, -1.0f, -1.0f);  
-        //设置颜色为绿色，设置左侧面的右顶点       
-        gl.glVertex3f(-1.0f, -1.0f, 1.0f);  
-        //完成金字塔的绘制  
-        gl.glEnd();  
-        //重置模型观察矩阵  
-        gl.glLoadIdentity();  
-
-    }
-    
 
 }
