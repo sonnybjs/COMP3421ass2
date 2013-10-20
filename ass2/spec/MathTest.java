@@ -46,5 +46,10 @@ public class MathTest {
         	System.out.println();
         }
 	}
+	
+	@Test
+	public void normaTest(){
+		//System.out.println("aaaaaaaaaaa"+MathUtil.normal(a, b, c))
+	}
 
 }

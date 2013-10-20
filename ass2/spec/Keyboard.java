@@ -77,12 +77,6 @@ public class Keyboard implements KeyListener{
 			case KeyEvent.VK_V:
 				myCamera.diffuseDown();
 				break;
-			case KeyEvent.VK_B:
-				myCamera.specularUp();
-				break;
-			case KeyEvent.VK_N:
-				myCamera.specularDown();
-				break;
 		 }		
 	}
 }

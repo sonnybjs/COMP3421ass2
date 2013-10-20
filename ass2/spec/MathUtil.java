@@ -80,11 +80,6 @@ public class MathUtil {
 
 		return u;
 	}
-
-	// ===========================================
-	// COMPLETE THE METHODS BELOW
-	// ===========================================
-
 	/**
 	 * A 2D translation matrix for the given offset vector
 	 * 

@@ -180,8 +180,8 @@ public class Game extends JFrame {
 	 */
 	public static void main(String[] args) throws FileNotFoundException {
 		
-		//Terrain terrain = LevelIO.load(new File(args[0]));
-		Terrain terrain = LevelIO.load(new File("input1"));
+		Terrain terrain = LevelIO.load(new File(args[0]));
+		//Terrain terrain = LevelIO.load(new File("input1"));
 		
 		System.out.println(args[0]);
 		Game game = new Game(terrain);

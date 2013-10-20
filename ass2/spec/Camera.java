@@ -29,7 +29,6 @@ public class Camera implements GLEventListener {
 	GLU glu = new GLU();
 	float ambient = 0.7f;
 	float diffuse = 1.5f;
-	float specular = 0.3f;
 	JLabel myLabel = Game.label;
 	boolean lightEnable = true;
 	double cameraAvatarDistance = 5.0;
@@ -181,7 +180,7 @@ public class Camera implements GLEventListener {
 			// gl.glLightf(GL2.GL_LIGHT1, GL2.GL_QUADRATIC_ATTENUATION , (float)
 			// 0.5);
 
-		} else {
+		} else { //use default light
 			float[] a = new float[4];
 			a[0] = a[1] = a[2] = ambient;
 			a[3] = 1.0f;
@@ -355,14 +354,6 @@ public class Camera implements GLEventListener {
 
 	public void diffuseDown() {
 		diffuse += -0.1f;
-	}
-
-	public void specularUp() {
-		specular += 0.1f;
-	}
-
-	public void specularDown() {
-		specular += -0.1f;
 	}
 
 	@Override

@@ -65,6 +65,7 @@ public class Terrain {
 	    			double[] n = MathUtil.normal(a, b, c);
 	    			
 	    			gl.glNormal3d(n[0], n[1], n[2]);
+	    			System.out.println("aaaaaaaaaaaaaa"+n[0]+" "+n[1]+" "+n[2]);
 	    			gl.glTexCoord2f(textureLeft, textureBottom);//вСоб
 	    			gl.glVertex3d(i,this.getGridAltitude(i, y),y);
 	    			gl.glTexCoord2f(textureRight, textureBottom); //сроб
